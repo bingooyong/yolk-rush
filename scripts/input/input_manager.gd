@@ -4,6 +4,7 @@ extends Node
 signal move_input(direction: Vector2)
 signal jump_pressed()
 signal action_pressed()
+signal attack_pressed()  ## 攻击输入信号
 
 var touch_start: Vector2 = Vector2.ZERO
 var is_touching: bool = false
@@ -25,6 +26,8 @@ func _input(event: InputEvent) -> void:
 				jump_pressed.emit()
 			KEY_E, KEY_F:
 				action_pressed.emit()
+			KEY_J, KEY_K:  ## J/K 键攻击
+				attack_pressed.emit()
 
 func _handle_touch(event: InputEventScreenTouch) -> void:
 	if event.pressed:

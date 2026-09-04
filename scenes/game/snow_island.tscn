@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://d9e8f7g6h5i4j"]
+[gd_scene load_steps=8 format=3 uid="uid://d9e8f7g6h5i4j"]
 
 [ext_resource type="Script" path="res://scenes/game/snow_island.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/level/level_builder.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/gameplay/character_gameplay.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/visual/character_visual.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/camera/camera_controller.gd" id="6"]
+[ext_resource type="Script" path="res://scenes/game/combat_ui.gd" id="7"]
 
 [node name="SnowIsland" type="Node3D"]
 script = ExtResource("1")
@@ -31,3 +32,12 @@ script = ExtResource("6")
 transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 3, 8)
 fov = 60.0
 current = true
+
+[node name="CombatUI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7")

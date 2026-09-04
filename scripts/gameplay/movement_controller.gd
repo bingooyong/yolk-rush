@@ -8,6 +8,7 @@ extends Node
 
 var move_direction: Vector2 = Vector2.ZERO
 var camera_basis: Basis = Basis.IDENTITY
+var attack_input: bool = false  ## 攻击输入
 
 func _ready() -> void:
 	print("[MovementController] Ready - Speed: %.1f, Jump: %.1f" % [move_speed, jump_velocity])
@@ -22,12 +23,16 @@ func jump() -> void:
 	if character_body and character_body.is_on_floor():
 		character_body.velocity.y = jump_velocity
 
+func attack() -> void:
+	attack_input = true
+
 func _physics_process(delta: float) -> void:
 	if not character_body:
 		return
 
 	_apply_movement(delta)
 	_apply_rotation(delta)
+	_handle_attack()
 
 func _apply_movement(delta: float) -> void:
 	# Convert 2D input to 3D movement relative to camera
@@ -58,3 +63,9 @@ func _apply_rotation(delta: float) -> void:
 		# Smooth rotation
 		var angle_diff := wrapf(target_rotation - current_rotation, -PI, PI)
 		character_body.rotation.y += angle_diff * rotation_speed * delta
+
+func _handle_attack() -> void:
+	if attack_input:
+		attack_input = false
+		if character_body.has_method("attack"):
+			character_body.attack()

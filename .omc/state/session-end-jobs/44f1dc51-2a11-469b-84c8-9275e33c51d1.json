@@ -1,0 +1,317 @@
+{
+  "version": 1,
+  "jobId": "5ef6f60d-9e18-4f99-b761-ae0ede841c81",
+  "sessionId": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+  "scopeKey": "f6a1179f903a40ea4c4c31d1fae1dba2a2c7361ed0e758a8c1bdd54f147993ff",
+  "revision": 40,
+  "createdAt": "2026-09-04T11:55:06.033Z",
+  "updatedAt": "2026-09-04T11:55:38.972Z",
+  "producerGraceExpiresAt": "2026-09-04T11:55:36.035Z",
+  "bestEffortDeadlineAt": "2026-09-04T11:56:27.035Z",
+  "producers": {
+    "core": {
+      "state": "no-op",
+      "intentKey": "641ee53b7ba4f63503f402b656ea897d4b2b032e28cb8e82a7463ee89afe6992",
+      "payloadDigest": "641ee53b7ba4f63503f402b656ea897d4b2b032e28cb8e82a7463ee89afe6992",
+      "sealedAt": "2026-09-04T11:55:38.972Z",
+      "sealedBy": "recovery"
+    },
+    "wiki": {
+      "state": "no-op",
+      "sealedAt": "2026-09-04T11:55:06.033Z",
+      "sealedBy": "wiki-producer"
+    }
+  },
+  "actions": {
+    "foreground-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "expired",
+      "attempts": 3,
+      "idempotencyKey": "febf6dba2f2536433960a07f7cedce72e946b43ced0896570df80f017b8914d2",
+      "payload": {
+        "transcriptPath": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+        "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+        "reason": "prompt_input_exit",
+        "input": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "transcript_path": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+          "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+          "prompt_id": "f29271fa-f883-40f1-b432-a78d4b29c541",
+          "hook_event_name": "SessionEnd",
+          "reason": "prompt_input_exit"
+        },
+        "metrics": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "ended_at": "2026-09-04T11:55:06.024Z",
+          "reason": "prompt_input_exit",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 3,
+          "outcomeCode": "runner-identity-unavailable"
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-09-04T11:55:38.586Z",
+      "runner": {
+        "attempt": 3,
+        "runnerNonce": "4f20f104-e05a-4317-9e6f-d60e89fe15ce",
+        "phase": "terminal",
+        "deadlineAt": "2026-09-04T11:55:48.518Z"
+      },
+      "lastOutcomeCode": "required-foreground-cleanup-exhausted"
+    },
+    "wiki-capture": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 0,
+      "idempotencyKey": "1719cd1ef5b51e0269b78c4cb8c9308c9c1f7b82fd1c067fc034c060f23863f5",
+      "payload": {},
+      "budgetMs": 9000,
+      "completedAt": "2026-09-04T11:55:06.033Z"
+    },
+    "team-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "cee6ac31df545408e1e822247ac249b3f8182a98a5fe8e448ae3b251e55bdee1",
+      "payload": {
+        "transcriptPath": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+        "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+        "reason": "prompt_input_exit",
+        "input": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "transcript_path": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+          "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+          "prompt_id": "f29271fa-f883-40f1-b432-a78d4b29c541",
+          "hook_event_name": "SessionEnd",
+          "reason": "prompt_input_exit"
+        },
+        "metrics": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "ended_at": "2026-09-04T11:55:06.024Z",
+          "reason": "prompt_input_exit",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 3,
+          "outcomeCode": "runner-identity-unavailable"
+        }
+      },
+      "budgetMs": 9000,
+      "lastOutcomeCode": "required-core-producer-unavailable"
+    },
+    "python-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "1f1370c4ac056606059d517e2f106b602d8cbcb04587b3fcc5f3b9f89e649cd0",
+      "payload": {
+        "transcriptPath": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+        "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+        "reason": "prompt_input_exit",
+        "input": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "transcript_path": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+          "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+          "prompt_id": "f29271fa-f883-40f1-b432-a78d4b29c541",
+          "hook_event_name": "SessionEnd",
+          "reason": "prompt_input_exit"
+        },
+        "metrics": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "ended_at": "2026-09-04T11:55:06.024Z",
+          "reason": "prompt_input_exit",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 3,
+          "outcomeCode": "runner-identity-unavailable"
+        }
+      },
+      "budgetMs": 9000,
+      "lastOutcomeCode": "required-core-producer-unavailable"
+    },
+    "reply-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "0b3a8b47c28b26d56aca004d4f572b96c118f16819c0d35162418816f9a5420a",
+      "payload": {
+        "transcriptPath": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+        "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+        "reason": "prompt_input_exit",
+        "input": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "transcript_path": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+          "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+          "prompt_id": "f29271fa-f883-40f1-b432-a78d4b29c541",
+          "hook_event_name": "SessionEnd",
+          "reason": "prompt_input_exit"
+        },
+        "metrics": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "ended_at": "2026-09-04T11:55:06.024Z",
+          "reason": "prompt_input_exit",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 3,
+          "outcomeCode": "runner-identity-unavailable"
+        }
+      },
+      "budgetMs": 9000,
+      "lastOutcomeCode": "required-core-producer-unavailable"
+    },
+    "callback": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "d068ede2655bf89e0c0950e087d0603d7dcf45538e94f20a654d08c6f4841895",
+      "payload": {
+        "transcriptPath": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+        "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+        "reason": "prompt_input_exit",
+        "input": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "transcript_path": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+          "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+          "prompt_id": "f29271fa-f883-40f1-b432-a78d4b29c541",
+          "hook_event_name": "SessionEnd",
+          "reason": "prompt_input_exit"
+        },
+        "metrics": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "ended_at": "2026-09-04T11:55:06.024Z",
+          "reason": "prompt_input_exit",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 3,
+          "outcomeCode": "runner-identity-unavailable"
+        }
+      },
+      "budgetMs": 2000,
+      "lastOutcomeCode": "best-effort-core-producer-unavailable"
+    },
+    "notification": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "89c0438ff63097ce04beb60efb87292ff68a7af350a0ee331f3de9dbf42d62fc",
+      "payload": {
+        "transcriptPath": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+        "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+        "reason": "prompt_input_exit",
+        "input": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "transcript_path": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+          "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+          "prompt_id": "f29271fa-f883-40f1-b432-a78d4b29c541",
+          "hook_event_name": "SessionEnd",
+          "reason": "prompt_input_exit"
+        },
+        "metrics": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "ended_at": "2026-09-04T11:55:06.024Z",
+          "reason": "prompt_input_exit",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 3,
+          "outcomeCode": "runner-identity-unavailable"
+        }
+      },
+      "budgetMs": 2000,
+      "lastOutcomeCode": "best-effort-core-producer-unavailable"
+    },
+    "openclaw": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "31fe8f6e1cf204e27006de511df257326fdd98655122ca437013e8779ffc735b",
+      "payload": {
+        "transcriptPath": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+        "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+        "reason": "prompt_input_exit",
+        "input": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "transcript_path": "/Users/bingooyong/.claude/projects/-Users-bingooyong-Code-01Code-github-com-bingooyong-yolk-rush/44f1dc51-2a11-469b-84c8-9275e33c51d1.jsonl",
+          "cwd": "/Users/bingooyong/Code/01Code/github.com/bingooyong/yolk-rush",
+          "prompt_id": "f29271fa-f883-40f1-b432-a78d4b29c541",
+          "hook_event_name": "SessionEnd",
+          "reason": "prompt_input_exit"
+        },
+        "metrics": {
+          "session_id": "44f1dc51-2a11-469b-84c8-9275e33c51d1",
+          "ended_at": "2026-09-04T11:55:06.024Z",
+          "reason": "prompt_input_exit",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 3,
+          "outcomeCode": "runner-identity-unavailable"
+        }
+      },
+      "budgetMs": 2000,
+      "lastOutcomeCode": "best-effort-core-producer-unavailable"
+    }
+  },
+  "owner": null,
+  "phase": "complete",
+  "completion": {
+    "completedAt": "2026-09-04T11:55:38.972Z",
+    "terminalDigest": "70675f65817eb98390f0966e4be9061235bd7c7dbc21dcf6ed84dd13260e96fa",
+    "terminalRevision": 40
+  }
+}
