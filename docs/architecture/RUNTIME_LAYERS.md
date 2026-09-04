@@ -47,8 +47,8 @@ GitHub 侧已有 **data + print-only bootstrap**；Domain 加载器尚未落地�
 - `scripts/domain/**` 或等价目录：character loader、level segment resolver、collision factory
 - 读取 `yolk_hero.json` → 产出 gameplay capsule，而非 `MeshInstance3D` 形状
 
-**Current gap**  
-**未实现。** 仓库仅有 print-only bootstrap；不要假装已有完整 Domain runtime。新能力先登记 Skill（原则 7），再最小增量落地。
+**Current status**  
+最小加载层已落地：`scripts/character/character_definition.gd`、`scripts/level/level_definition.gd`、`scripts/character/character_gameplay.gd`（仅胶囊）、`tools/validate_*.gd`。仍无完整 match / 移动 / Visual；新能力先登记 Skill（原则 7）。
 
 ---
 
