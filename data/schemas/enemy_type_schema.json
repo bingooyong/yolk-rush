@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Enemy Type Schema",
+  "description": "定义敌人类型的数据结构",
+  "type": "object",
+  "required": ["version", "enemy_types"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "enemy_types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "stats", "ai_behavior", "visual"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z_]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "stats": {
+            "type": "object",
+            "required": ["max_health", "move_speed", "attack_damage"],
+            "properties": {
+              "max_health": {"type": "number", "minimum": 1},
+              "move_speed": {"type": "number", "minimum": 0},
+              "attack_damage": {"type": "number", "minimum": 0},
+              "attack_range": {"type": "number", "minimum": 0},
+              "attack_cooldown": {"type": "number", "minimum": 0},
+              "detection_range": {"type": "number", "minimum": 0},
+              "chase_range": {"type": "number", "minimum": 0}
+            }
+          },
+          "ai_behavior": {
+            "type": "object",
+            "required": ["type", "aggro_radius"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["aggressive_melee", "ranged_kiting", "tank_frontline"]
+              },
+              "aggro_radius": {"type": "number", "minimum": 0},
+              "retreat_health_percent": {"type": "number", "minimum": 0, "maximum": 1},
+              "special_abilities": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "name", "cooldown", "effect"],
+                  "properties": {
+                    "id": {"type": "string"},
+                    "name": {"type": "string"},
+                    "cooldown": {"type": "number", "minimum": 0},
+                    "range": {"type": "number", "minimum": 0},
+                    "effect": {"type": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "visual": {
+            "type": "object",
+            "required": ["model_type", "color", "scale"],
+            "properties": {
+              "model_type": {"type": "string"},
+              "color": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+              "scale": {"type": "number", "minimum": 0.1, "maximum": 10},
+              "effects": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          },
+          "loot": {
+            "type": "object",
+            "properties": {
+              "exp": {"type": "integer", "minimum": 0},
+              "drops": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["item", "chance"],
+                  "properties": {
+                    "item": {"type": "string"},
+                    "chance": {"type": "number", "minimum": 0, "maximum": 1}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

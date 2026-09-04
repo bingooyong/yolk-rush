@@ -5,6 +5,7 @@ signal move_input(direction: Vector2)
 signal jump_pressed()
 signal action_pressed()
 signal attack_pressed()  ## 攻击输入信号
+signal skill_pressed(skill_key: String)  ## 技能输入信号 (Q/E/R/F)
 
 var touch_start: Vector2 = Vector2.ZERO
 var is_touching: bool = false
@@ -64,3 +65,30 @@ func _process(_delta: float) -> void:
 		move_input.emit(input_dir.normalized())
 	elif not is_touching:
 		move_input.emit(Vector2.ZERO)
+
+	## 技能输入检测 (Q/E/R/F) - 使用 is_action_just_pressed 避免连续触发
+	if Input.is_action_just_pressed("skill_1") or (Input.is_key_pressed(KEY_Q) and not _skill_held.get("Q", false)):
+		skill_pressed.emit("skill_1")
+		_skill_held["Q"] = true
+	elif not Input.is_key_pressed(KEY_Q):
+		_skill_held["Q"] = false
+
+	if Input.is_action_just_pressed("skill_2") or (Input.is_key_pressed(KEY_E) and not _skill_held.get("E", false)):
+		skill_pressed.emit("skill_2")
+		_skill_held["E"] = true
+	elif not Input.is_key_pressed(KEY_E):
+		_skill_held["E"] = false
+
+	if Input.is_action_just_pressed("skill_3") or (Input.is_key_pressed(KEY_R) and not _skill_held.get("R", false)):
+		skill_pressed.emit("skill_3")
+		_skill_held["R"] = true
+	elif not Input.is_key_pressed(KEY_R):
+		_skill_held["R"] = false
+
+	if Input.is_action_just_pressed("skill_ultimate") or (Input.is_key_pressed(KEY_F) and not _skill_held.get("F", false)):
+		skill_pressed.emit("skill_ultimate")
+		_skill_held["F"] = true
+	elif not Input.is_key_pressed(KEY_F):
+		_skill_held["F"] = false
+
+var _skill_held: Dictionary = {}  ## 防止技能按键连续触发

@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7ij4vxqp8y0s"]
+
+[ext_resource type="Script" path="res://scripts/game/advanced_enemy.gd" id="1_melee"]
+
+[node name="MeleeAssassin" type="CharacterBody3D" groups=["enemy"]]
+script = ExtResource("1_melee")
+enemy_type_id = "melee_assassin"

@@ -1,0 +1,132 @@
+{
+  "$schema": "../schemas/enemy_type_schema.json",
+  "version": "1.0.0",
+  "enemy_types": [
+    {
+      "id": "melee_assassin",
+      "name": "暗影刺客",
+      "description": "快速接近敌人的近战单位，高伤害低血量",
+      "stats": {
+        "max_health": 80.0,
+        "move_speed": 6.0,
+        "attack_damage": 25.0,
+        "attack_range": 1.5,
+        "attack_cooldown": 1.2,
+        "detection_range": 15.0,
+        "chase_range": 20.0
+      },
+      "ai_behavior": {
+        "type": "aggressive_melee",
+        "aggro_radius": 15.0,
+        "retreat_health_percent": 0.0,
+        "circle_strafe": true,
+        "dodge_chance": 0.3,
+        "special_abilities": [
+          {
+            "id": "shadow_dash",
+            "name": "暗影突袭",
+            "cooldown": 8.0,
+            "range": 10.0,
+            "effect": "dash_to_target"
+          }
+        ]
+      },
+      "visual": {
+        "model_type": "humanoid",
+        "color": "#2C1F3D",
+        "scale": 1.0,
+        "effects": ["shadow_trail"]
+      },
+      "loot": {
+        "exp": 25,
+        "drops": [
+          {"item": "shadow_essence", "chance": 0.3}
+        ]
+      }
+    },
+    {
+      "id": "ranged_archer",
+      "name": "冰霜射手",
+      "description": "保持距离的远程单位，持续输出",
+      "stats": {
+        "max_health": 60.0,
+        "move_speed": 4.0,
+        "attack_damage": 15.0,
+        "attack_range": 12.0,
+        "attack_cooldown": 2.0,
+        "detection_range": 18.0,
+        "chase_range": 15.0
+      },
+      "ai_behavior": {
+        "type": "ranged_kiting",
+        "aggro_radius": 18.0,
+        "retreat_health_percent": 0.3,
+        "keep_distance": 10.0,
+        "strafe_behavior": "maintain_range",
+        "special_abilities": [
+          {
+            "id": "ice_arrow",
+            "name": "冰箭",
+            "cooldown": 6.0,
+            "range": 12.0,
+            "effect": "slow_target"
+          }
+        ]
+      },
+      "visual": {
+        "model_type": "humanoid",
+        "color": "#5BA4CF",
+        "scale": 0.9,
+        "effects": ["ice_aura"]
+      },
+      "loot": {
+        "exp": 20,
+        "drops": [
+          {"item": "ice_crystal", "chance": 0.25}
+        ]
+      }
+    },
+    {
+      "id": "tank_guardian",
+      "name": "岩石守卫",
+      "description": "高血量的坦克单位，具有控制能力",
+      "stats": {
+        "max_health": 200.0,
+        "move_speed": 2.5,
+        "attack_damage": 20.0,
+        "attack_range": 2.0,
+        "attack_cooldown": 2.5,
+        "detection_range": 12.0,
+        "chase_range": 15.0
+      },
+      "ai_behavior": {
+        "type": "tank_frontline",
+        "aggro_radius": 12.0,
+        "retreat_health_percent": 0.0,
+        "taunt_behavior": true,
+        "block_chance": 0.4,
+        "special_abilities": [
+          {
+            "id": "ground_slam",
+            "name": "大地重击",
+            "cooldown": 10.0,
+            "range": 5.0,
+            "effect": "aoe_stun"
+          }
+        ]
+      },
+      "visual": {
+        "model_type": "golem",
+        "color": "#6B5B4A",
+        "scale": 1.5,
+        "effects": ["rock_armor"]
+      },
+      "loot": {
+        "exp": 40,
+        "drops": [
+          {"item": "stone_core", "chance": 0.4}
+        ]
+      }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ var collision_profile: Dictionary = {}
 var animation_controller: AnimationController
 var health_component: HealthComponent
 var combat_system: CombatSystem
+var skill_system: SkillSystem
 
 ## 视觉组件
 var visual_character: Node3D
@@ -93,6 +94,12 @@ func _setup_combat_components() -> void:
 	combat_system.base_damage = 15.0
 	combat_system.attack_range = 2.0
 	add_child(combat_system)
+
+	## 创建 SkillSystem
+	skill_system = SkillSystem.new()
+	skill_system.name = "SkillSystem"
+	skill_system.set_character(self)
+	add_child(skill_system)
 
 	## 连接信号
 	if health_component:
