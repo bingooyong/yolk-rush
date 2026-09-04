@@ -1,0 +1,34 @@
+{
+  "weapon_slots": {
+    "main_hand": "主手武器",
+    "off_hand": "副手武器"
+  },
+  "armor_slots": {
+    "helmet": "头盔",
+    "chest": "胸甲",
+    "gloves": "手套",
+    "boots": "靴子",
+    "ring_1": "戒指1",
+    "ring_2": "戒指2",
+    "necklace": "项链"
+  },
+  "total_slots": 9,
+  "rarity_colors": {
+    "common": "#FFFFFF",
+    "uncommon": "#1EFF00",
+    "rare": "#0070DD",
+    "epic": "#A335EE",
+    "legendary": "#FF8000"
+  },
+  "stat_types": [
+    "physical_damage",
+    "skill_damage",
+    "attack_speed",
+    "crit_chance",
+    "crit_damage",
+    "max_health",
+    "defense",
+    "evasion",
+    "move_speed"
+  ]
+}
