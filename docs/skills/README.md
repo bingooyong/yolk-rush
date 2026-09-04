@@ -10,14 +10,14 @@
 
 | id | status | 一句话 | 成功标准（摘要） |
 |----|--------|--------|------------------|
-| `validate-asset-contract` | planned | 用 Character Asset Contract 校验角色 JSON + 资源 | schema + 清单全过；方可进 Runtime |
+| `validate-asset-contract` | draft | 用 Character Asset Contract 校验角色 JSON + 资源 | schema + 清单全过；方可进 Runtime |
 | `run-visual-benchmark` | planned | 在 Snow Island golden 上打 Visual 分 | 总分 ≥ 85 pass；&lt;70 reject；70–84 NI |
 | `run-performance-benchmark` | planned | Mobile/iOS 性能采样并对 DRAFT 预算填 checklist | checklist 归档；预算数字标 DRAFT |
 
 ### validate-asset-contract
 - **inputs**: `data/characters/*.json`、`data/contracts/character_asset_contract.json`
 - **outputs**: pass/fail + 失败字段列表
-- **recipe**: `docs/skills/validate-asset-contract/`（未创建）
+- **recipe**: `tools/validate_character.gd` + `tools/validate_data.py`（Domain 门禁；Skill 文档夹仍可补）
 - **depends_on**: —
 
 ### run-visual-benchmark
