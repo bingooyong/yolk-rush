@@ -1,0 +1,60 @@
+{
+  "id": "phase-6-ui-audio-camera",
+  "name": "Phase 6: UI/音效/相机系统",
+  "status": "planning",
+  "priority": "high",
+  "created_date": "2026-09-05",
+  "estimated_time": "2周",
+  "dependencies": ["phase-4-5-visual-assets"],
+  "description": "完善UI、音效、相机系统，让游戏达到可发布演示版本质量",
+  "objectives": [
+    "专业级 UI 界面（HUD + 菜单）",
+    "完整音效系统（战斗 + 环境 + 音乐）",
+    "电影级相机体验（跟随 + 震动 + 特效）",
+    "可录制高质量演示视频"
+  ],
+  "deliverables": [
+    "scripts/ui/game_hud.gd - 战斗 HUD",
+    "scripts/audio/audio_manager.gd - 音效管理器",
+    "scripts/camera/camera_controller.gd - 相机控制器",
+    "scripts/core/game_manager.gd - 游戏管理器（集成）",
+    "scenes/ui/ - UI场景",
+    "audio/ - 音频资源"
+  ],
+  "test_plan": {
+    "automated": [
+      "tools/test_phase_6_systems.py - 系统检查"
+    ],
+    "manual": [
+      "UI 可用性测试",
+      "音效听感测试",
+      "相机跟随测试",
+      "完整战斗循环测试"
+    ]
+  },
+  "acceptance_criteria": {
+    "P0": [
+      "血条UI显示正确",
+      "技能冷却UI功能正常",
+      "基础音效（攻击/受击）播放",
+      "相机平滑跟随玩家"
+    ],
+    "P1": [
+      "Combo系统显示",
+      "小地图功能",
+      "环境音效",
+      "相机震动效果"
+    ],
+    "P2": [
+      "动态音乐系统",
+      "后处理特效",
+      "慢动作效果"
+    ]
+  },
+  "implementation_notes": "基础框架已完成，需要补充真实音频资源和场景文件",
+  "risks": [
+    "音频资源获取（解决方案：使用免费音效库）",
+    "UI 设计（解决方案：参考 Fall Guys 风格）",
+    "性能优化（解决方案：音效池 + 对象复用）"
+  ]
+}
