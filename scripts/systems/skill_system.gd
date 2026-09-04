@@ -265,19 +265,48 @@ func _apply_stun(target: Node, duration: float) -> void:
 		target.apply_stun(duration)
 
 func _spawn_skill_vfx(skill: Dictionary) -> void:
-	var vfx_data: Dictionary = skill.get("vfx", {})
-	# TODO: 实际生成VFX
-	print("[SkillSystem] Spawn VFX for skill")
+	if not character:
+		return
+
+	var skill_id: String = skill.get("id", "")
+	var vfx_id: String = skill.get("vfx", {}).get("id", skill_id)
+
+	# 使用 VFXManager 生成特效
+	var VFXManager := preload("res://scripts/visual/vfx_manager.gd")
+	var root := get_tree().root
+	VFXManager.play_skill_vfx(vfx_id, character.global_position, root)
+
+	print("[SkillSystem] Spawned VFX for skill: %s" % skill_id)
 
 func _spawn_channel_vfx(skill: Dictionary) -> void:
-	var vfx_data: Dictionary = skill.get("vfx", {})
-	# TODO: 实际生成蓄力VFX
-	print("[SkillSystem] Spawn channel VFX")
+	if not character:
+		return
+
+	# 蓄力特效（简单光效）
+	var light := OmniLight3D.new()
+	light.name = "ChannelLight"
+	light.light_color = Color(1.0, 0.8, 0.0)
+	light.light_energy = 2.0
+	light.omni_range = 5.0
+	character.add_child(light)
+
+	# 脉冲动画
+	var tween := create_tween()
+	tween.set_loops()
+	tween.tween_property(light, "light_energy", 3.0, 0.5)
+	tween.tween_property(light, "light_energy", 1.0, 0.5)
+
+	# 技能施放后清理
+	await get_tree().create_timer(skill.get("cast_time", 1.5)).timeout
+	light.queue_free()
 
 func _camera_shake(skill: Dictionary) -> void:
 	var shake_data: Dictionary = skill.get("camera_shake", {})
-	# TODO: 实际触发相机抖动
-	print("[SkillSystem] Camera shake")
+	var intensity: float = shake_data.get("intensity", 0.5)
+	var duration: float = shake_data.get("duration", 0.3)
+
+	# TODO: 实际触发相机抖动（需要相机控制器支持）
+	print("[SkillSystem] Camera shake: intensity=%.1f, duration=%.1f" % [intensity, duration])
 
 func can_afford_cost(skill: Dictionary) -> bool:
 	var cost: Dictionary = skill.get("cost", {})

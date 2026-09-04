@@ -36,6 +36,9 @@ func load_level(level_id: String) -> bool:
 	_setup_lighting(lighting_data)
 	_set_spawn_point(level_data.get("spawn", {}))
 
+	# Phase 4.5: Add visual decorations
+	_add_decorations(level_data)
+
 	level_loaded.emit(level_id)
 	print("[LevelBuilder] Level loaded: %s" % level_id)
 	return true
@@ -153,3 +156,34 @@ func _set_spawn_point(spawn_data: Dictionary) -> void:
 
 func get_spawn_point() -> Vector3:
 	return spawn_point
+
+## Phase 4.5: Add visual decorations to the level
+func _add_decorations(level_data: Dictionary) -> void:
+	var LevelDecorator := preload("res://scripts/visual/level_decorator.gd")
+
+	# Calculate total area size from segments
+	var total_area := Vector2(50, 100)  # Default for snow_island
+
+	# Add decorations
+	print("[LevelBuilder] Adding visual decorations...")
+
+	# Snow piles (20-30)
+	LevelDecorator.spawn_snow_piles(self, 25, total_area)
+
+	# Rocks (10-15)
+	LevelDecorator.spawn_rocks(self, 12, total_area)
+
+	# Trees (5-10)
+	LevelDecorator.spawn_trees(self, 7, total_area)
+
+	# Icicles at edges (optional)
+	var icicle_positions: Array[Vector3] = [
+		Vector3(-20, 0, -40),
+		Vector3(20, 0, -40),
+		Vector3(-20, 0, 40),
+		Vector3(20, 0, 40)
+	]
+	LevelDecorator.spawn_icicles(self, icicle_positions)
+
+	print("[LevelBuilder] ✅ Decorations added!")
+

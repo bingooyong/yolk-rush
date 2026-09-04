@@ -38,16 +38,23 @@ func _load_character_visual(char_id: String) -> void:
 		_spawn_placeholder()
 
 func _spawn_placeholder() -> void:
-	# Phase 4: Procedural CSG character
-	print("[CharacterVisual] Creating procedural CSG character")
+	# Phase 4.5: Use CharacterGeometry to create high-quality procedural characters
+	print("[CharacterVisual] Creating procedural character for: %s" % character_id)
 
-	var VisualCharacter := load("res://scripts/visual/visual_character.gd")
-	var visual_char := Node3D.new()
-	visual_char.set_script(VisualCharacter)
-	visual_char.name = "VisualCharacter"
-	add_child(visual_char)
+	var CharacterGeometry := load("res://scripts/visual/character_geometry.gd")
+	var geometry: Node3D
 
-	print("[CharacterVisual] ✅ Procedural character spawned for: %s" % character_id)
+	if character_id == "yolk_hero":
+		geometry = CharacterGeometry.create_yolk_hero()
+	else:
+		# Assume it's an enemy type
+		geometry = CharacterGeometry.create_enemy(character_id)
+
+	if geometry:
+		add_child(geometry)
+		print("[CharacterVisual] ✅ Procedural character created: %s" % character_id)
+	else:
+		push_error("[CharacterVisual] Failed to create geometry for: %s" % character_id)
 
 func load_visual_model() -> void:
 	# Phase 1+: load actual GLB model

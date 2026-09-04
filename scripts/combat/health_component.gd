@@ -48,6 +48,9 @@ func take_damage(amount: float, source: Node = null) -> bool:
 	health_changed.emit(current_health, max_health)
 	damage_taken.emit(actual_damage, source)
 
+	# Phase 4.5: 播放受击特效
+	_play_hit_vfx()
+
 	## 触发无敌时间
 	if invincibility_duration > 0.0:
 		is_invincible = true
@@ -58,6 +61,20 @@ func take_damage(amount: float, source: Node = null) -> bool:
 		die()
 
 	return true
+
+## Phase 4.5: 播放受击视觉反馈
+func _play_hit_vfx() -> void:
+	var character := get_parent()
+	if not character:
+		return
+
+	var VFXManager := load("res://scripts/visual/vfx_manager.gd")
+
+	# 受击火花
+	VFXManager.spawn_hit_vfx(character.global_position + Vector3(0, 1, 0), get_tree().root)
+
+	# 红色闪光
+	VFXManager.flash_hit_feedback(character, 0.15)
 
 ## 治疗
 func heal(amount: float) -> void:

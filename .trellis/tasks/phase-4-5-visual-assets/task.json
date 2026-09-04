@@ -1,0 +1,35 @@
+{
+  "id": "phase-4-5-visual-assets",
+  "title": "Phase 4.5: 视觉资产补完",
+  "description": "为游戏原型补充完整的视觉资产，达到可展示的质量标准",
+  "phase": "4.5",
+  "priority": "critical",
+  "status": "in_progress",
+  "dependencies": ["phase-5-combat"],
+  "deliverables": [
+    "程序化角色系统（英雄 + 3种敌人）",
+    "完整雪岛场景（地形 + 装饰）",
+    "VFX特效系统（技能 + 打击）",
+    "基础UI美化"
+  ],
+  "acceptance_criteria": {
+    "visual_quality": [
+      "角色有清晰的视觉辨识度",
+      "关卡有趣且符合主题",
+      "技能特效清晰可见",
+      "UI 简洁美观"
+    ],
+    "technical": [
+      "保持 60 FPS",
+      "符合数据驱动架构",
+      "易于迭代和替换"
+    ],
+    "demo_ready": [
+      "可以录制演示视频",
+      "战斗循环视觉完整",
+      "无明显占位符"
+    ]
+  },
+  "estimated_time": "1-2 days (AI coding)",
+  "actual_time": "TBD"
+}
