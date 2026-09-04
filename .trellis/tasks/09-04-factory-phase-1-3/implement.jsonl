@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/guides/index.md", "reason": "Spec 导航"}
+{"file": ".trellis/spec/runtime/index.md", "reason": "Runtime 边界"}
+{"file": ".trellis/spec/content/character-contract.md", "reason": "角色合同"}
+{"file": ".trellis/spec/content/level-dsl.md", "reason": "关卡 DSL"}
+{"file": "docs/architecture/ARCHITECTURE_PRINCIPLES.md", "reason": "十条原则"}

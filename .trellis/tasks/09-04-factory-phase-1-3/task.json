@@ -1,0 +1,23 @@
+{
+  "id": "09-04-factory-phase-1-3",
+  "title": "Yolk Rush Game Factory Phase 1–3",
+  "status": "planning",
+  "priority": "P0",
+  "creator": "bingooyong",
+  "assignee": "agent",
+  "package": "yolk-rush",
+  "branch": "main",
+  "base_branch": "main",
+  "parent": null,
+  "children": [
+    "09-04-hero-pipeline",
+    "09-04-snow-island",
+    "09-04-visual-perf-qa"
+  ],
+  "meta": {
+    "engine": "Godot 4.7.2 stable",
+    "language": "GDScript",
+    "renderer": "mobile",
+    "platform": "ios"
+  }
+}
