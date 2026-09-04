@@ -38,32 +38,16 @@ func _load_character_visual(char_id: String) -> void:
 		_spawn_placeholder()
 
 func _spawn_placeholder() -> void:
-	# Phase 1: placeholder geometry (capsule + sphere)
-	var capsule_mesh := MeshInstance3D.new()
-	var capsule := CapsuleMesh.new()
-	capsule.height = 1.48
-	capsule.radius = 0.34
-	capsule_mesh.mesh = capsule
-	capsule_mesh.position.y = 0.74
-	add_child(capsule_mesh)
-	capsule_mesh.owner = get_tree().edited_scene_root if Engine.is_editor_hint() else self
+	# Phase 4: Procedural CSG character
+	print("[CharacterVisual] Creating procedural CSG character")
 
-	var head_mesh := MeshInstance3D.new()
-	var sphere := SphereMesh.new()
-	sphere.radius = 0.24
-	head_mesh.mesh = sphere
-	head_mesh.position.y = 1.55
-	add_child(head_mesh)
-	head_mesh.owner = get_tree().edited_scene_root if Engine.is_editor_hint() else self
+	var VisualCharacter := load("res://scripts/visual/visual_character.gd")
+	var visual_char := Node3D.new()
+	visual_char.set_script(VisualCharacter)
+	visual_char.name = "VisualCharacter"
+	add_child(visual_char)
 
-	# Apply placeholder material (bright color for visibility)
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(1.0, 0.9, 0.3)  # Yolk yellow
-	mat.roughness = 0.42
-	capsule_mesh.material_override = mat
-	head_mesh.material_override = mat
-
-	print("[CharacterVisual] Placeholder spawned for: %s" % character_id)
+	print("[CharacterVisual] ✅ Procedural character spawned for: %s" % character_id)
 
 func load_visual_model() -> void:
 	# Phase 1+: load actual GLB model

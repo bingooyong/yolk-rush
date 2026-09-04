@@ -13,11 +13,17 @@ var animation_controller: AnimationController
 var health_component: HealthComponent
 var combat_system: CombatSystem
 
+## 视觉组件
+var visual_character: Node3D
+var attack_vfx: CPUParticles3D
+var hit_vfx: CPUParticles3D
+
 func _ready() -> void:
 	if not character_id.is_empty():
 		_load_character_data()
 	_setup_collision()
 	_setup_combat_components()
+	_setup_visual_components()
 
 func _load_character_data() -> void:
 	var data_path := "res://data/characters/%s.json" % character_id
@@ -97,13 +103,26 @@ func _on_damage_taken(amount: float, source: Node) -> void:
 	if combat_system:
 		combat_system.on_hit()
 
+	# 播放受击特效
+	if hit_vfx:
+		hit_vfx.play_effect()
+	if visual_character and visual_character.has_method("play_hit"):
+		visual_character.play_hit()
+
 func _on_died() -> void:
 	print("[CharacterGameplay] %s died" % name)
 
 ## 攻击接口
 func attack() -> bool:
 	if combat_system:
-		return combat_system.try_attack()
+		var success := combat_system.try_attack()
+		if success:
+			# 播放攻击特效
+			if attack_vfx:
+				attack_vfx.play_effect()
+			if visual_character and visual_character.has_method("play_attack"):
+				visual_character.play_attack()
+		return success
 	return false
 
 ## 获取生命值
@@ -123,3 +142,27 @@ func is_alive() -> bool:
 	if health_component:
 		return not health_component.is_dead
 	return true
+
+func _setup_visual_components() -> void:
+	## 创建视觉角色
+	var VisualCharacter := load("res://scripts/visual/visual_character.gd")
+	visual_character = Node3D.new()
+	visual_character.set_script(VisualCharacter)
+	visual_character.name = "VisualCharacter"
+	add_child(visual_character)
+
+	## 创建攻击特效
+	var AttackVFX := load("res://scripts/vfx/attack_vfx.gd")
+	attack_vfx = CPUParticles3D.new()
+	attack_vfx.set_script(AttackVFX)
+	attack_vfx.name = "AttackVFX"
+	attack_vfx.position = Vector3(0, 1.0, -0.5)  # 角色前方
+	add_child(attack_vfx)
+
+	## 创建受击特效
+	var HitVFX := load("res://scripts/vfx/hit_vfx.gd")
+	hit_vfx = CPUParticles3D.new()
+	hit_vfx.set_script(HitVFX)
+	hit_vfx.name = "HitVFX"
+	hit_vfx.position = Vector3(0, 1.0, 0)  # 角色中心
+	add_child(hit_vfx)
