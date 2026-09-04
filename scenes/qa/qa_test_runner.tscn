@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://qa_test_runner"]
+
+[ext_resource type="Script" path="res://scripts/qa/qa_runner.gd" id="1"]
+
+[node name="QATestRunner" type="Node"]
+script = ExtResource("1")

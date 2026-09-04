@@ -1,0 +1,88 @@
+[gd_scene load_steps=5 format=3 uid="uid://c8j2m3n4o5p6q"]
+
+[ext_resource type="Script" path="res://scripts/visual/character_visual.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/studio/hero_studio.gd" id="2"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.15, 0.17, 0.22, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.35
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_1"]
+size = Vector2(10, 10)
+
+[node name="HeroStudio" type="Node3D"]
+script = ExtResource("2")
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.766044, -0.469846, 0.438371, 0, 0.681998, 0.731354, -0.642788, -0.560191, 0.522499, 0, 3, 2.5)
+light_energy = 1.15
+shadow_enabled = true
+
+[node name="FillLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.5, 2)
+light_energy = 0.35
+omni_range = 8.0
+
+[node name="RimLight" type="SpotLight3D" parent="."]
+transform = Transform3D(-0.866025, 0.433013, -0.25, 0, 0.5, 0.866025, 0.5, 0.75, -0.433013, 2, 2.5, -2)
+light_energy = 0.55
+spot_range = 10.0
+spot_angle = 45.0
+
+[node name="Character" type="Node3D" parent="."]
+
+[node name="Visual" type="Node3D" parent="Character"]
+script = ExtResource("1")
+character_id = "yolk_hero"
+
+[node name="Cameras" type="Node3D" parent="."]
+
+[node name="Front" type="Camera3D" parent="Cameras"]
+transform = Transform3D(1, 0, 0, 0, 0.996195, -0.087156, 0, 0.087156, 0.996195, 0, 1.2, 3.5)
+fov = 50.0
+current = true
+
+[node name="Back" type="Camera3D" parent="Cameras"]
+transform = Transform3D(-1, 0, 0, 0, 0.996195, -0.087156, 0, -0.087156, -0.996195, 0, 1.2, -3.5)
+fov = 50.0
+
+[node name="Left" type="Camera3D" parent="Cameras"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.5, 1.2, 0)
+fov = 50.0
+
+[node name="Right" type="Camera3D" parent="Cameras"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 3.5, 1.2, 0)
+fov = 50.0
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_1")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="CameraSwitch" type="HBoxContainer" parent="UI"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 400.0
+offset_bottom = 60.0
+
+[node name="FrontBtn" type="Button" parent="UI/CameraSwitch"]
+layout_mode = 2
+text = "Front (1)"
+
+[node name="BackBtn" type="Button" parent="UI/CameraSwitch"]
+layout_mode = 2
+text = "Back (2)"
+
+[node name="LeftBtn" type="Button" parent="UI/CameraSwitch"]
+layout_mode = 2
+text = "Left (3)"
+
+[node name="RightBtn" type="Button" parent="UI/CameraSwitch"]
+layout_mode = 2
+text = "Right (4)"

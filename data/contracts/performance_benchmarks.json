@@ -1,0 +1,36 @@
+{
+  "mobile_target": {
+    "description": "iOS/Android mobile performance targets",
+    "fps": 60,
+    "min_fps": 30,
+    "frame_time_ms": 16.67,
+    "draw_calls": 500,
+    "vertices": 100000,
+    "static_memory_mb": 256,
+    "video_memory_mb": 512
+  },
+  "desktop_target": {
+    "description": "Desktop performance targets",
+    "fps": 60,
+    "min_fps": 45,
+    "frame_time_ms": 16.67,
+    "draw_calls": 1000,
+    "vertices": 500000,
+    "static_memory_mb": 512,
+    "video_memory_mb": 1024
+  },
+  "golden_scene_snow_island": {
+    "description": "Snow Island Phase 2 golden scene baseline",
+    "fps": 60,
+    "min_fps": 55,
+    "frame_time_ms": 16.67,
+    "avg_frame_time_ms": 14.0,
+    "draw_calls": 100,
+    "vertices": 10000,
+    "objects_drawn": 10,
+    "static_memory_mb": 128,
+    "video_memory_mb": 256,
+    "physics_3d_active_objects": 2,
+    "physics_3d_collision_pairs": 1
+  }
+}
