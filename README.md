@@ -65,3 +65,17 @@ Godot iOS export requires **macOS + Xcode**. Download Godot from
 ## License
 
 Original work. Do not copy characters, maps, UI, or audio from other games.
+
+## Docs
+
+架构约定与门禁（原则、分层、Asset Contract、Skill、Benchmark）：
+
+- [docs/architecture/README.md](docs/architecture/README.md) — 索引
+- [docs/architecture/ARCHITECTURE_PRINCIPLES.md](docs/architecture/ARCHITECTURE_PRINCIPLES.md) — 十条原则
+- [docs/architecture/RUNTIME_LAYERS.md](docs/architecture/RUNTIME_LAYERS.md)
+- [docs/architecture/ASSET_CONTRACT.md](docs/architecture/ASSET_CONTRACT.md)
+- [docs/architecture/SKILL_CONVENTION.md](docs/architecture/SKILL_CONVENTION.md)
+- [docs/architecture/BENCHMARKS.md](docs/architecture/BENCHMARKS.md)
+- [docs/skills/README.md](docs/skills/README.md) — Skill 索引（Phase 3 planned）
+
+角色契约 schema：`data/contracts/character_asset_contract.json`。
