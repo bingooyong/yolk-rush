@@ -1,132 +1,151 @@
 extends Node
-## 游戏管理器 - Phase 6 集成
-## 连接 HUD、Audio、Camera 和游戏逻辑
+## GameManager - 游戏全局管理器
+## Phase 6: 完整系统集成 + 伤害飘字
 
-signal game_started
-signal game_paused
-signal game_resumed
-signal game_over
-
-## 引用
-var hud: GameHUD
-var audio: AudioManager
-var camera_controller: CameraController
-var player: CharacterBody3D
-
-## 游戏状态
-var is_paused: bool = false
-var game_active: bool = false
+var game_hud: CanvasLayer
+var camera_controller: Node3D
+var damage_number_scene: PackedScene
 
 func _ready() -> void:
-	# 查找组件
-	hud = get_node_or_null("/root/GameHUD")
-	audio = get_node_or_null("/root/AudioManager")
+	# 预加载伤害飘字场景
+	damage_number_scene = preload("res://scenes/ui/damage_number_3d.tscn")
+	print("[GameManager] Initialized")
 
-	if not audio:
-		audio = AudioManager.new()
-		audio.name = "AudioManager"
-		get_tree().root.add_child(audio)
+func initialize() -> void:
+	print("[GameManager] System initialization complete")
 
-## 开始游戏
-func start_game() -> void:
-	game_active = true
-	game_started.emit()
+func set_hud(hud: CanvasLayer) -> void:
+	game_hud = hud
+	print("[GameManager] HUD connected")
 
-	if audio:
-		audio.play_music(AudioManager.MusicType.BATTLE)
+func set_camera(camera: Node3D) -> void:
+	camera_controller = camera
+	print("[GameManager] Camera connected")
 
-## 暂停游戏
-func pause_game() -> void:
-	if not game_active:
-		return
+## 玩家事件回调
+func on_player_attack(combo_stage: int) -> void:
+	print("[GameManager] Player attack - Combo stage: %d" % combo_stage)
 
-	is_paused = true
-	get_tree().paused = true
-	game_paused.emit()
+	# 更新 HUD Combo
+	if game_hud and game_hud.has_method("update_combo"):
+		game_hud.update_combo(combo_stage)
 
-	if audio:
-		audio.set_music_volume(audio.music_volume * 0.3)
+	# 播放攻击音效
+	if combo_stage == 1:
+		AudioManager.play_sfx("attack_light")
+	elif combo_stage == 2:
+		AudioManager.play_sfx("attack_medium")
+	else:
+		AudioManager.play_sfx("attack_heavy")
 
-## 恢复游戏
-func resume_game() -> void:
-	if not is_paused:
-		return
+	# 相机轻微震动
+	if camera_controller and camera_controller.has_method("add_shake"):
+		var shake_strength := 0.1 + (combo_stage - 1) * 0.05
+		camera_controller.add_shake(shake_strength)
 
-	is_paused = false
-	get_tree().paused = false
-	game_resumed.emit()
+func on_player_damaged(amount: float, current_hp: float, max_hp: float) -> void:
+	print("[GameManager] Player damaged: %.1f (%.1f/%.1f)" % [amount, current_hp, max_hp])
 
-	if audio:
-		audio.set_music_volume(audio.music_volume / 0.3)
+	# 更新 HUD 血条
+	if game_hud and game_hud.has_method("update_health"):
+		game_hud.update_health(current_hp, max_hp)
 
-## 游戏结束
-func end_game(victory: bool) -> void:
-	game_active = false
-	game_over.emit()
+	# 播放受击音效
+	AudioManager.play_sfx("player_hit")
 
-	if audio:
-		if victory:
-			audio.play_music(AudioManager.MusicType.VICTORY)
-		else:
-			audio.play_music(AudioManager.MusicType.DEFEAT)
-
-## 玩家受伤回调
-func on_player_damaged(damage: float, current_health: float, max_health: float) -> void:
-	if hud:
-		hud.update_health(current_health, max_health, 0, 0)
-
-	if audio:
-		audio.play_sfx(AudioManager.SFXType.HIT_RECEIVED)
-
-	if camera_controller:
+	# 相机震动
+	if camera_controller and camera_controller.has_method("add_shake"):
 		camera_controller.add_shake(0.3)
 
-## 玩家攻击回调
-func on_player_attack(combo_count: int) -> void:
-	if audio:
-		if combo_count >= 3:
-			audio.play_sfx(AudioManager.SFXType.ATTACK_HEAVY)
-		else:
-			audio.play_sfx(AudioManager.SFXType.ATTACK_LIGHT)
+func on_player_died() -> void:
+	print("[GameManager] Player died")
+	AudioManager.play_sfx("player_death")
 
+	# 相机剧烈震动
+	if camera_controller and camera_controller.has_method("add_shake"):
+		camera_controller.add_shake(1.0)
+
+	# TODO: 显示死亡界面
+
+func on_player_shield_changed(current: float, max_shield: float) -> void:
+	if game_hud and game_hud.has_method("update_shield"):
+		game_hud.update_shield(current, max_shield)
+
+## 技能事件回调
+func on_skill_cast(skill_id: String) -> void:
+	print("[GameManager] Skill cast: %s" % skill_id)
+
+	# 播放技能音效
+	match skill_id:
+		"whirlwind_slash":
+			AudioManager.play_sfx("skill_whirlwind")
+		"dash":
+			AudioManager.play_sfx("skill_dash")
+		"shield":
+			AudioManager.play_sfx("skill_shield")
+		"devastate":
+			AudioManager.play_sfx("skill_devastate")
+
+	# 技能特殊相机效果
 	if camera_controller:
-		camera_controller.add_shake(0.1)
+		match skill_id:
+			"dash":
+				# 冲刺时 FOV 扩大
+				if camera_controller.has_method("set_fov_boost"):
+					camera_controller.set_fov_boost(1.2, 0.3)
+			"devastate":
+				# 大招慢动作
+				if camera_controller.has_method("set_time_scale"):
+					camera_controller.set_time_scale(0.3, 0.5)
+				if camera_controller.has_method("add_shake"):
+					camera_controller.add_shake(0.8)
 
-	if hud:
-		hud.add_combo()
+func on_skill_cooldown(skill_id: String, duration: float) -> void:
+	print("[GameManager] Skill cooldown: %s (%.1fs)" % [skill_id, duration])
+	# HUD 冷却由 SkillSystem 直接更新
 
-## 玩家释放技能回调
-func on_player_skill_cast(skill_id: String) -> void:
-	if audio:
-		audio.play_sfx(AudioManager.SFXType.SKILL_CAST)
+## 敌人事件回调
+func on_enemy_damaged(amount: float, position: Vector3) -> void:
+	print("[GameManager] Enemy damaged: %.1f at %s" % [amount, position])
 
-	if camera_controller:
-		camera_controller.add_shake(0.5)
+	# 生成伤害飘字
+	spawn_damage_number(amount, position, false)
 
-## 玩家死亡回调
-func on_player_death() -> void:
-	if audio:
-		audio.play_sfx(AudioManager.SFXType.DEATH)
+	# 播放打击音效
+	AudioManager.play_sfx("enemy_hit")
 
-	if camera_controller:
-		camera_controller.death_effect()
+	# 轻微相机震动
+	if camera_controller and camera_controller.has_method("add_shake"):
+		camera_controller.add_shake(0.15)
 
-	await get_tree().create_timer(2.0).timeout
-	end_game(false)
+func on_enemy_died(position: Vector3) -> void:
+	print("[GameManager] Enemy died at %s" % position)
 
-## 敌人死亡回调
-func on_enemy_killed() -> void:
-	if audio:
-		audio.play_sfx(AudioManager.SFXType.DEATH, 0.2)
+	# 播放死亡音效
+	AudioManager.play_sfx("enemy_death")
 
-## 技能冷却更新
-func on_skill_cooldown_update(skill_key: String, remaining: float, total: float) -> void:
-	if hud:
-		hud.update_skill_cooldown(skill_key, remaining, total)
+	# 生成特殊飘字
+	spawn_damage_number(0, position, false, "KILL")
 
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		if is_paused:
-			resume_game()
-		else:
-			pause_game()
+	# 相机震动
+	if camera_controller and camera_controller.has_method("add_shake"):
+		camera_controller.add_shake(0.4)
+
+## 伤害飘字生成
+func spawn_damage_number(amount: float, world_position: Vector3, is_critical: bool, custom_text: String = "") -> void:
+	if not damage_number_scene:
+		return
+
+	var damage_number: Node3D = damage_number_scene.instantiate()
+	damage_number.global_position = world_position + Vector3(0, 1.5, 0)  # 偏移到头顶
+
+	# 设置文本
+	if custom_text != "":
+		damage_number.set_text(custom_text)
+	else:
+		damage_number.set_damage(amount, is_critical)
+
+	# 添加到场景树
+	get_tree().root.add_child(damage_number)
+
+	print("[GameManager] Spawned damage number: %.1f at %s" % [amount, world_position])

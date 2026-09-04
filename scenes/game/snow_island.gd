@@ -146,6 +146,12 @@ func _setup_skill_system() -> void:
 		print("[SnowIsland] 技能就绪: %s" % skill_id)
 	)
 
+	# 连接冷却更新到 HUD
+	skill_system.cooldown_updated.connect(func(skill_key: String, remaining: float, total: float):
+		if game_hud and game_hud.has_method("update_skill_cooldown"):
+			game_hud.update_skill_cooldown(skill_key, remaining, total)
+	)
+
 	print("[SnowIsland] Skill system initialized")
 
 func _setup_combat_system() -> void:
@@ -156,13 +162,35 @@ func _setup_combat_system() -> void:
 			GameManager.on_player_attack(combo_stage)
 		)
 
+		# 连接 combo 更新到 HUD
+		if combat.has_signal("combo_updated"):
+			combat.combo_updated.connect(func(combo_count: int):
+				if game_hud and game_hud.has_method("update_combo"):
+					game_hud.update_combo(combo_count)
+			)
+
 	if player.has_node("HealthComponent"):
 		var health = player.get_node("HealthComponent")
 		health.damaged.connect(func(amount: float, current: float, max_hp: float):
 			GameManager.on_player_damaged(amount, current, max_hp)
+			# 更新 HUD 血条
+			if game_hud and game_hud.has_method("update_health"):
+				game_hud.update_health(current, max_hp)
 		)
 		health.died.connect(func():
 			GameManager.on_player_died()
 		)
+
+		# 连接护盾变化
+		if health.has_signal("shield_changed"):
+			health.shield_changed.connect(func(current: float, max_shield: float):
+				GameManager.on_player_shield_changed(current, max_shield)
+			)
+
+		# 初始化 HUD 血条显示
+		if game_hud and game_hud.has_method("update_health"):
+			var current_hp = health.current_health if "current_health" in health else 100.0
+			var max_hp = health.max_health if "max_health" in health else 100.0
+			game_hud.update_health(current_hp, max_hp)
 
 	print("[SnowIsland] Combat system callbacks connected")
