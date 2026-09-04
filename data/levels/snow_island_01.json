@@ -1,0 +1,19 @@
+{
+  "id": "snow_island_01",
+  "display_name": "Snow Island",
+  "lighting": "game_lighting_v1",
+  "spawn": { "x": 0, "y": 0, "z": 8, "yaw": 0 },
+  "segments": [
+    { "id": "start", "role": "start_hall", "width": 22, "length": 20, "y": 0 },
+    { "id": "lane_1", "role": "main_lane", "width": 12, "length": 16, "y": 0 },
+    { "id": "ice_a", "role": "challenge", "width": 6.2, "length": 7, "y": 0.15, "ice": true },
+    { "id": "ice_b", "role": "challenge", "width": 5.6, "length": 7, "y": 0.35, "ice": true },
+    { "id": "ice_c", "role": "challenge", "width": 6.0, "length": 7, "y": 0.55, "ice": true },
+    { "id": "lane_2", "role": "main_lane", "width": 12, "length": 14, "y": 0 },
+    { "id": "ramp", "role": "shortcut", "width": 4.2, "length": 8, "y": 1.15 },
+    { "id": "short", "role": "shortcut", "width": 5, "length": 14, "y": 2.35, "ice": true },
+    { "id": "recov", "role": "recovery", "width": 30, "length": 48, "y": -3.4 },
+    { "id": "lane_3", "role": "main_lane", "width": 12, "length": 12, "y": 0 },
+    { "id": "finish", "role": "finish_hall", "width": 24, "length": 16, "y": 0 }
+  ]
+}

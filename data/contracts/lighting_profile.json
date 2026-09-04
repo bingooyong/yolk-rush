@@ -1,0 +1,7 @@
+{
+  "id": "game_lighting_v1",
+  "key": { "elevation_deg": 35, "azimuth_deg": -40, "energy": 1.15 },
+  "fill": { "energy": 0.35 },
+  "rim": { "energy": 0.55 },
+  "ambient_energy": 0.35
+}

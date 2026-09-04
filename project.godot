@@ -1,0 +1,32 @@
+; Engine configuration file.
+config_version=5
+
+[application]
+
+config/name="Yolk Rush"
+config/description="AI-native 3D party obstacle race. iOS first."
+config/version="0.1.0"
+run/main_scene="res://scenes/bootstrap/boot.tscn"
+config/features=PackedStringArray("4.7", "Mobile")
+
+[autoload]
+
+App="*res://scripts/core/app.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/handheld/orientation=4
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
+textures/vram_compression/import_etc2_astc=true

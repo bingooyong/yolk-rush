@@ -1,0 +1,26 @@
+{
+  "id": "yolk_hero",
+  "display_name": "Yolk Hero",
+  "visual_model": "res://assets/characters/yolk_hero/yolk_hero.glb",
+  "skeleton": "humanoid_v1",
+  "scale": 1.0,
+  "idle_animation": "idle",
+  "run_animation": "run",
+  "jump_animation": "jump_start",
+  "airborne_animation": "airborne",
+  "fall_animation": "fall",
+  "land_animation": "land",
+  "roll_animation": "roll",
+  "dash_animation": "dash",
+  "pounce_animation": "pounce",
+  "hit_animation": "hit",
+  "victory_animation": "victory",
+  "fail_animation": "fail",
+  "materials": [
+    { "slot": "body", "library": "soft_plastic", "roughness": 0.42, "metallic": 0.0 },
+    { "slot": "scarf", "library": "cloth", "roughness": 0.86, "metallic": 0.0 },
+    { "slot": "boots", "library": "rubber", "roughness": 0.7, "metallic": 0.0 }
+  ],
+  "collision_profile": { "height": 1.48, "radius": 0.34, "offset_y": 0.74 },
+  "contract": { "version": "1.0.0", "height_m": 1.46, "facing": "-Z", "origin": "feet" }
+}
