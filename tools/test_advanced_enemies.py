@@ -27,7 +27,7 @@ def main():
 
     # 验证脚本文件
     required_files = [
-        "scripts/game/advanced_enemy.gd",
+        "scripts/ai/advanced_enemy.gd",
         "scenes/enemies/melee_assassin.tscn",
         "scenes/enemies/ranged_archer.tscn",
         "scenes/enemies/tank_guardian.tscn"

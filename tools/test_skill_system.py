@@ -28,7 +28,7 @@ def main():
 
     # 验证脚本文件
     required_files = [
-        "scripts/game/skill_system.gd",
+        "scripts/systems/skill_system.gd",
         "scenes/game/skill_ui.gd"
     ]
 
