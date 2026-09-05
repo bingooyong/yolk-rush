@@ -2,16 +2,16 @@ extends Node
 class_name AIManager
 ## AI管理器 - 统一管理所有AI实体
 
-signal ai_registered(ai_controller: AIController)
-signal ai_unregistered(ai_controller: AIController)
+signal ai_registered(ai_controller)
+signal ai_unregistered(ai_controller)
 
 ## 配置
 @export var max_active_ai: int = 50  # 最大活跃AI数量
 @export var update_batch_size: int = 10  # 每帧更新的AI数量
 
 ## 状态
-var registered_ais: Array[AIController] = []
-var active_ais: Array[AIController] = []
+var registered_ais: Array = []
+var active_ais: Array = []
 var current_update_index: int = 0
 
 func _ready() -> void:
@@ -38,7 +38,7 @@ func _update_active_ais() -> void:
 	current_update_index = (current_update_index + updates_this_frame) % max(1, active_ais.size())
 
 ## 注册AI
-func register_ai(ai_controller: AIController) -> void:
+func register_ai(ai_controller) -> void:
 	if ai_controller in registered_ais:
 		return
 
@@ -49,7 +49,7 @@ func register_ai(ai_controller: AIController) -> void:
 	print("[AIManager] Registered AI: %s" % ai_controller.get_entity_name())
 
 ## 注销AI
-func unregister_ai(ai_controller: AIController) -> void:
+func unregister_ai(ai_controller) -> void:
 	if ai_controller not in registered_ais:
 		return
 
@@ -60,7 +60,7 @@ func unregister_ai(ai_controller: AIController) -> void:
 	print("[AIManager] Unregistered AI: %s" % ai_controller.get_entity_name())
 
 ## 激活AI
-func activate_ai(ai_controller: AIController) -> void:
+func activate_ai(ai_controller) -> void:
 	if ai_controller not in registered_ais:
 		register_ai(ai_controller)
 		return
@@ -69,20 +69,20 @@ func activate_ai(ai_controller: AIController) -> void:
 		active_ais.append(ai_controller)
 
 ## 停用AI
-func deactivate_ai(ai_controller: AIController) -> void:
+func deactivate_ai(ai_controller) -> void:
 	active_ais.erase(ai_controller)
 
 ## 获取所有AI
-func get_all_ais() -> Array[AIController]:
+func get_all_ais() -> Array:
 	return registered_ais
 
 ## 获取活跃AI
-func get_active_ais() -> Array[AIController]:
+func get_active_ais() -> Array:
 	return active_ais
 
 ## 获取指定状态的AI
-func get_ais_in_state(state: AIController.AIState) -> Array[AIController]:
-	var result: Array[AIController] = []
+func get_ais_in_state(state: int) -> Array:
+	var result: Array = []
 
 	for ai in registered_ais:
 		if is_instance_valid(ai) and ai.current_state == state:
@@ -91,12 +91,13 @@ func get_ais_in_state(state: AIController.AIState) -> Array[AIController]:
 	return result
 
 ## 获取正在战斗的AI
-func get_combat_ais() -> Array[AIController]:
-	return get_ais_in_state(AIController.AIState.COMBAT)
+func get_combat_ais() -> Array:
+	# 使用常量值而不是类型引用
+	return get_ais_in_state(3)  # COMBAT = 3
 
 ## 清理无效的AI
 func cleanup_invalid_ais() -> void:
-	var invalid_ais: Array[AIController] = []
+	var invalid_ais: Array = []
 
 	for ai in registered_ais:
 		if not is_instance_valid(ai) or not is_instance_valid(ai.entity):
@@ -118,9 +119,10 @@ func broadcast_event(event_name: String, data: Dictionary = {}) -> void:
 func alert_all(threat: Node) -> void:
 	for ai in active_ais:
 		if is_instance_valid(ai):
-			if ai.current_state in [AIController.AIState.IDLE, AIController.AIState.PATROL]:
+			# IDLE = 0, PATROL = 1
+			if ai.current_state in [0, 1]:
 				ai.set_target(threat)
-				ai.change_state(AIController.AIState.ALERT)
+				ai.change_state(4)  # ALERT = 4
 
 ## 获取统计信息
 func get_stats() -> Dictionary:
@@ -130,10 +132,11 @@ func get_stats() -> Dictionary:
 		"by_state": {}
 	}
 
-	for state in AIController.AIState.values():
-		var state_name = AIController.AIState.keys()[state]
+	# 手动遍历各个状态值
+	for state in [0, 1, 2, 3, 4, 5]:  # IDLE到DEAD
+		var state_names = ["IDLE", "PATROL", "CHASE", "COMBAT", "ALERT", "DEAD"]
 		var count = get_ais_in_state(state).size()
-		stats["by_state"][state_name] = count
+		stats["by_state"][state_names[state]] = count
 
 	return stats
 

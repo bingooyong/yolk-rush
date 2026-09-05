@@ -1,253 +1,191 @@
-extends AIController
+extends Node
 class_name CombatAI
-## 战斗AI控制器 - 处理战斗相关的AI行为
+## 战斗AI - 用于敌人战斗行为
 
-## 战斗配置
-@export var chase_speed_multiplier: float = 1.2  # 追击速度倍率
-@export var attack_cooldown: float = 1.5  # 攻击冷却时间
-@export var skill_usage_chance: float = 0.3  # 使用技能的概率
-@export var flee_distance: float = 15.0  # 逃跑距离
+# 预加载AIController脚本
+const AIControllerScript = preload("res://scripts/ai/ai_controller.gd")
 
-## 巡逻配置
-@export var patrol_points: Array[Vector3] = []  # 巡逻点
-@export var patrol_wait_time: float = 2.0  # 巡逻点等待时间
+## AI配置
+@export var detection_range: float = 10.0
+@export var attack_range: float = 2.0
+@export var flee_health_threshold: float = 0.3
+@export var patrol_speed: float = 2.0
+@export var chase_speed: float = 4.0
 
-## 战斗状态
-var last_attack_time: float = 0.0
-var current_patrol_index: int = 0
-var patrol_wait_timer: float = 0.0
-var alert_timer: float = 0.0
-var alert_duration: float = 5.0  # 警戒持续时间
+## 内部AI控制器
+var ai_controller: Node
+var entity: Node
+var perception: Node
 
-func _initialize() -> void:
-	super._initialize()
+func _ready() -> void:
+	# 创建AI控制器
+	ai_controller = AIControllerScript.new()
+	add_child(ai_controller)
 
-	# 如果没有设置巡逻点，创建默认巡逻点
-	if patrol_points.is_empty() and entity is Node3D:
-		_generate_default_patrol_points()
+	# 获取实体引用
+	entity = get_parent()
+	if entity:
+		ai_controller.entity = entity
 
-func _generate_default_patrol_points() -> void:
-	var start_pos = entity.global_position
-	patrol_points = [
-		start_pos,
-		start_pos + Vector3(5, 0, 0),
-		start_pos + Vector3(5, 0, 5),
-		start_pos + Vector3(0, 0, 5),
-	]
+	# 获取感知组件
+	if entity and entity.has_node("PerceptionComponent"):
+		perception = entity.get_node("PerceptionComponent")
+
+	print("[CombatAI] Initialized for: %s" % (entity.name if entity else "Unknown"))
+
+func _process(delta: float) -> void:
+	if not ai_controller or not entity:
+		return
+
+	# 根据当前状态执行行为
+	match ai_controller.current_state:
+		0:  # IDLE
+			_update_idle(delta)
+		1:  # PATROL
+			_update_patrol(delta)
+		2:  # CHASE
+			_update_chase(delta)
+		3:  # COMBAT
+			_update_combat(delta)
+		4:  # ALERT
+			_update_alert(delta)
 
 ## 空闲状态
-func _enter_idle() -> void:
-	set_blackboard_value("idle_time", 0.0)
-
-func _state_idle(delta: float) -> void:
-	# 检测附近的敌人
-	var targets = detect_targets()
-	if not targets.is_empty():
-		var closest_target = _find_closest_target(targets)
-		if closest_target:
-			set_target(closest_target)
-			change_state(AIState.ALERT)
-			return
-
-	# 空闲一段时间后开始巡逻
-	var idle_time = get_blackboard_value("idle_time", 0.0) + delta
-	set_blackboard_value("idle_time", idle_time)
-
-	if idle_time > 3.0 and not patrol_points.is_empty():
-		change_state(AIState.PATROL)
+func _update_idle(_delta: float) -> void:
+	# 检测周围是否有目标
+	if perception:
+		var detected = perception.detect_nearby_entities()
+		if not detected.is_empty():
+			var target = detected[0]
+			ai_controller.set_target(target)
+			ai_controller.change_state(2)  # CHASE
 
 ## 巡逻状态
-func _enter_patrol() -> void:
-	current_patrol_index = 0
-	patrol_wait_timer = 0.0
-
-func _state_patrol(delta: float) -> void:
-	# 检测敌人
-	var targets = detect_targets()
-	if not targets.is_empty():
-		var closest_target = _find_closest_target(targets)
-		if closest_target:
-			set_target(closest_target)
-			change_state(AIState.ALERT)
+func _update_patrol(_delta: float) -> void:
+	# 检测目标
+	if perception:
+		var detected = perception.detect_nearby_entities()
+		if not detected.is_empty():
+			var target = detected[0]
+			ai_controller.set_target(target)
+			ai_controller.change_state(2)  # CHASE
 			return
 
-	# 巡逻逻辑
-	if patrol_points.is_empty():
-		change_state(AIState.IDLE)
-		return
-
-	var target_point = patrol_points[current_patrol_index]
-	var distance = _get_distance_to_position(target_point)
-
-	if distance < 1.0:
-		# 到达巡逻点，等待
-		patrol_wait_timer += delta
-		if patrol_wait_timer >= patrol_wait_time:
-			patrol_wait_timer = 0.0
-			current_patrol_index = (current_patrol_index + 1) % patrol_points.size()
-	else:
-		# 移动到巡逻点
-		move_towards(target_point)
-
-## 警戒状态
-func _enter_alert() -> void:
-	alert_timer = 0.0
-
-func _state_alert(delta: float) -> void:
-	alert_timer += delta
-
-	# 检查目标是否有效
-	if not is_target_valid():
-		if alert_timer >= alert_duration:
-			change_state(AIState.IDLE)
-		return
-
-	# 目标在感知范围内，进入战斗
-	var distance = _get_distance_to(current_target)
-	if distance <= perception_radius:
-		change_state(AIState.COMBAT)
-		return
-
-	# 警戒超时
-	if alert_timer >= alert_duration:
-		clear_target()
-		change_state(AIState.IDLE)
-
-## 战斗状态
-func _enter_combat() -> void:
-	last_attack_time = 0.0
-
-func _state_combat(delta: float) -> void:
-	# 检查是否应该逃跑
-	if is_health_low():
-		change_state(AIState.FLEE)
-		return
-
-	# 检查目标是否有效
-	if not is_target_valid():
-		change_state(AIState.IDLE)
-		return
-
-	var distance = _get_distance_to(current_target)
-
-	# 目标太远，返回警戒
-	if distance > perception_radius * 1.5:
-		change_state(AIState.ALERT)
-		return
-
-	# 在攻击范围内
-	if distance <= attack_range:
-		_try_attack(delta)
-	else:
-		# 追击目标
-		if entity is Node3D:
-			move_towards(current_target.global_position)
-
-func _try_attack(delta: float) -> void:
-	last_attack_time += delta
-
-	if last_attack_time >= attack_cooldown:
-		last_attack_time = 0.0
-
-		# 随机决定使用普通攻击还是技能
-		if randf() < skill_usage_chance:
-			_try_use_skill()
-		else:
-			attack_target()
-
-func _try_use_skill() -> void:
-	# 获取可用技能
-	if not entity.has_method("get_available_skills"):
-		attack_target()
-		return
-
-	var skills = entity.get_available_skills()
-	if skills.is_empty():
-		attack_target()
-		return
-
-	# 随机选择一个技能
-	var skill = skills[randi() % skills.size()]
-	if not use_skill(skill):
-		attack_target()
-
-## 逃跑状态
-func _enter_flee() -> void:
-	set_blackboard_value("flee_start_time", Time.get_ticks_msec())
-
-func _state_flee(delta: float) -> void:
-	# 血量恢复，返回战斗
-	if not is_health_low() and is_target_valid():
-		change_state(AIState.COMBAT)
-		return
-
-	# 没有目标，返回空闲
-	if not is_target_valid():
-		change_state(AIState.IDLE)
-		return
-
-	# 逃离目标
-	var flee_direction = _get_flee_direction()
-	if entity is Node3D:
-		var flee_target = entity.global_position + flee_direction * flee_distance
-		move_towards(flee_target)
-
-func _get_flee_direction() -> Vector3:
-	if not is_target_valid():
-		return Vector3.BACK
-
-	if entity is Node3D and current_target is Node3D:
-		var direction = entity.global_position - current_target.global_position
-		return direction.normalized()
-
-	return Vector3.BACK
-
-## 死亡状态
-func _enter_dead() -> void:
-	clear_target()
-	set_process(false)
-
-func _state_dead(_delta: float) -> void:
-	# 死亡状态不做任何事
+	# 简单巡逻逻辑（可以后续扩展）
 	pass
 
-## 工具方法
+## 追击状态
+func _update_chase(_delta: float) -> void:
+	var target = ai_controller.current_target
+	if not is_instance_valid(target):
+		ai_controller.change_state(0)  # IDLE
+		return
 
-func _find_closest_target(targets: Array) -> Node:
-	if targets.is_empty():
-		return null
+	var distance = _get_distance_to_target(target)
 
-	var closest = targets[0]
-	var closest_distance = _get_distance_to(closest)
+	# 进入攻击范围
+	if distance <= attack_range:
+		ai_controller.change_state(3)  # COMBAT
+		return
 
-	for target in targets:
-		var distance = _get_distance_to(target)
-		if distance < closest_distance:
-			closest = target
-			closest_distance = distance
+	# 目标太远，放弃追击
+	if distance > detection_range * 1.5:
+		ai_controller.clear_target()
+		ai_controller.change_state(0)  # IDLE
+		return
 
-	return closest
+	# 继续追击
+	_move_towards_target(target, chase_speed)
 
-func _get_distance_to_position(position: Vector3) -> float:
-	if entity is Node3D:
-		return entity.global_position.distance_to(position)
-	return INF
+## 战斗状态
+func _update_combat(_delta: float) -> void:
+	var target = ai_controller.current_target
+	if not is_instance_valid(target):
+		ai_controller.change_state(0)  # IDLE
+		return
 
-## 公共接口
+	var distance = _get_distance_to_target(target)
 
-## 设置巡逻路径
-func set_patrol_points(points: Array[Vector3]) -> void:
-	patrol_points = points
-	current_patrol_index = 0
+	# 目标逃离，切换到追击
+	if distance > attack_range * 1.5:
+		ai_controller.change_state(2)  # CHASE
+		return
 
-## 强制进入战斗状态
-func enter_combat_with_target(target: Node) -> void:
-	set_target(target)
-	change_state(AIState.COMBAT)
+	# 检查是否需要逃跑
+	if entity.has_method("get_health_percentage"):
+		var health_percent = entity.get_health_percentage()
+		if health_percent < flee_health_threshold:
+			ai_controller.change_state(5)  # DEAD (暂用，后续可以加FLEE状态)
+			return
 
-## 受到伤害时的回调
-func on_damage_taken(attacker: Node, _damage: float) -> void:
-	# 如果空闲或巡逻，立即进入战斗
-	if current_state in [AIState.IDLE, AIState.PATROL]:
-		set_target(attacker)
-		change_state(AIState.ALERT)
+	# 执行攻击
+	_perform_attack(target)
+
+## 警戒状态
+func _update_alert(_delta: float) -> void:
+	# 警戒状态可以快速响应
+	var target = ai_controller.current_target
+	if is_instance_valid(target):
+		ai_controller.change_state(2)  # CHASE
+	else:
+		ai_controller.change_state(1)  # PATROL
+
+## 获取到目标的距离
+func _get_distance_to_target(target: Node) -> float:
+	if entity is Node3D and target is Node3D:
+		return entity.global_position.distance_to(target.global_position)
+	elif entity is Node2D and target is Node2D:
+		return entity.global_position.distance_to(target.global_position)
+	return 999.0
+
+## 向目标移动
+func _move_towards_target(target: Node, speed: float) -> void:
+	if entity is Node3D and target is Node3D:
+		var direction = (target.global_position - entity.global_position).normalized()
+		entity.global_position += direction * speed * get_process_delta_time()
+	elif entity is Node2D and target is Node2D:
+		var direction = (target.global_position - entity.global_position).normalized()
+		entity.global_position += direction * speed * get_process_delta_time()
+
+## 执行攻击
+func _perform_attack(target: Node) -> void:
+	# 简单攻击逻辑
+	if target.has_method("take_damage"):
+		target.take_damage(10.0)
+		print("[CombatAI] %s attacked %s" % [entity.name, target.name])
+
+## 便捷方法 - 获取当前状态
+func get_state() -> int:
+	return ai_controller.current_state if ai_controller else 0
+
+## 便捷方法 - 设置目标
+func set_target(target: Node) -> void:
+	if ai_controller:
+		ai_controller.set_target(target)
+
+## 便捷方法 - 切换状态
+func change_state(new_state: int) -> void:
+	if ai_controller:
+		ai_controller.change_state(new_state)
+
+## 便捷方法 - 获取实体名称
+func get_entity_name() -> String:
+	if ai_controller:
+		return ai_controller.get_entity_name()
+	return entity.name if entity else "Unknown"
+
+## 属性代理 - 暴露 current_state
+var current_state: int:
+	get:
+		return ai_controller.current_state if ai_controller else 0
+	set(value):
+		if ai_controller:
+			ai_controller.change_state(value)
+
+## 属性代理 - 暴露 current_target
+var current_target: Node:
+	get:
+		return ai_controller.current_target if ai_controller else null
+	set(value):
+		if ai_controller:
+			ai_controller.set_target(value)

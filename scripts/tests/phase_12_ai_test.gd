@@ -246,18 +246,23 @@ func test_ai_manager() -> void:
 	var ai2 = CombatAIScript.new()
 	entity2.add_child(ai2)
 
-	manager.register_ai(ai1)
-	manager.register_ai(ai2)
+	# 手动调用方法而不是依赖类型检查
+	manager.call("register_ai", ai1)
+	manager.call("register_ai", ai2)
 
-	assert_test(manager.get_all_ais().size() == 2, "应该注册2个AI")
-	assert_test(manager.get_active_ais().size() == 2, "应该有2个活跃AI")
+	var all_ais = manager.call("get_all_ais")
+	assert_test(all_ais.size() == 2, "应该注册2个AI")
+
+	var active_ais = manager.call("get_active_ais")
+	assert_test(active_ais.size() == 2, "应该有2个活跃AI")
 
 	ai1.change_state(AIControllerScript.AIState.COMBAT)
-	var combat_ais = manager.get_combat_ais()
+	var combat_ais = manager.call("get_combat_ais")
 	assert_test(combat_ais.size() == 1, "应该有1个战斗中的AI")
 
-	manager.unregister_ai(ai1)
-	assert_test(manager.get_all_ais().size() == 1, "应该剩余1个AI")
+	manager.call("unregister_ai", ai1)
+	all_ais = manager.call("get_all_ais")
+	assert_test(all_ais.size() == 1, "应该剩余1个AI")
 
 	entity1.queue_free()
 	entity2.queue_free()
@@ -284,9 +289,10 @@ func test_ai_integration() -> void:
 	target.add_to_group("entities")
 
 	# 注册到管理器
-	manager.register_ai(ai)
+	manager.call("register_ai", ai)
 
-	assert_test(ai in manager.get_all_ais(), "AI应该被注册")
+	var all_ais = manager.call("get_all_ais")
+	assert_test(ai in all_ais, "AI应该被注册")
 
 	# 模拟进入战斗
 	ai.enter_combat_with_target(target)
