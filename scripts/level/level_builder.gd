@@ -14,7 +14,8 @@ func build(def: LevelDefinition) -> Node3D:
 		return root
 
 	var spawn_z := float(def.spawn.get("z", 0.0))
-	var cursor_z := spawn_z
+	# Small rear pad so spawn sits on start_hall, not on the +Z lip.
+	var cursor_z := spawn_z + 2.0
 	var course_z_max := spawn_z
 	var course_z_min := spawn_z
 	var course_half_w := 0.0
