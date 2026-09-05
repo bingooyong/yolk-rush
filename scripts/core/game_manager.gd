@@ -18,6 +18,7 @@ const ShopDatabaseClass = preload("res://scripts/shop/shop_database.gd")
 const DropSystemClass = preload("res://scripts/drop/drop_system.gd")
 const DropDatabaseClass = preload("res://scripts/drop/drop_database.gd")
 const SaveManagerClass = preload("res://scripts/core/save_manager.gd")
+const SkillSystemClass = preload("res://scripts/skill/skill_system.gd")
 
 signal game_initialized()
 signal systems_ready()
@@ -33,6 +34,7 @@ var achievement_system
 var shop_system
 var drop_system
 var save_manager
+var skill_system
 
 # 数据库引用
 var equipment_database
@@ -130,6 +132,10 @@ func _initialize_systems() -> void:
 		add_child(save_manager)
 	else:
 		push_warning("[GameManager] Failed to create SaveManager")
+
+	# 技能系统
+	skill_system = SkillSystemClass.new()
+	add_child(skill_system)
 
 	print("[GameManager] Systems initialized")
 	systems_ready.emit()

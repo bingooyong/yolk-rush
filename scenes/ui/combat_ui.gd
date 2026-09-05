@@ -8,6 +8,7 @@ signal combat_ended()
 @export var player_health_bar: Node
 @export var enemy_health_bar: Node
 @export var combat_log: Node
+@export var skill_bar: Node
 
 var damage_number_container: Node2D
 var active_health_bars: Dictionary = {}
@@ -16,6 +17,7 @@ var active_health_bars: Dictionary = {}
 const HealthBarScript = preload("res://scenes/ui/health_bar.gd")
 const DamageNumberScript = preload("res://scenes/ui/damage_number.gd")
 const CombatLogScript = preload("res://scenes/ui/combat_log.gd")
+const SkillBarScript = preload("res://scenes/ui/skill_bar.gd")
 
 func _ready() -> void:
 	_setup_containers()
@@ -72,6 +74,12 @@ func _setup_default_ui() -> void:
 		enemy_health_bar.custom_minimum_size = Vector2(250, 25)
 		enemy_health_bar.visible = false
 		main_container.add_child(enemy_health_bar)
+
+	# 技能快捷栏（底部居中）
+	if not skill_bar:
+		skill_bar = SkillBarScript.new()
+		skill_bar.name = "SkillBar"
+		main_container.add_child(skill_bar)
 
 ## 更新玩家血条
 func update_player_health(current: float, maximum: float) -> void:
@@ -209,3 +217,12 @@ func remove_entity_health_bar(entity: Node) -> void:
 
 func _process(_delta: float) -> void:
 	update_entity_health_bar_positions()
+
+## 设置技能栏
+func setup_skill_bar(entity: Node, skill_instances: Array) -> void:
+	if skill_bar:
+		skill_bar.setup_skills(entity, skill_instances)
+
+## 获取技能栏
+func get_skill_bar() -> Node:
+	return skill_bar

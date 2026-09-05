@@ -1,0 +1,312 @@
+{
+  "skills": [
+    {
+      "skill_id": "heavy_strike",
+      "name": "重击",
+      "description": "全力一击，造成高额物理伤害",
+      "icon": "res://assets/icons/skills/heavy_strike.png",
+      "type": "active",
+      "target_type": "enemy_single",
+      "cooldown": 5.0,
+      "cost": {
+        "type": "stamina",
+        "value": 30
+      },
+      "cast_time": 0.3,
+      "range": 2.5,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 80,
+          "scaling": {
+            "stat": "strength",
+            "ratio": 1.2
+          },
+          "can_crit": true
+        }
+      ],
+      "animation": "heavy_attack",
+      "sound": "res://audio/sfx/heavy_strike.ogg"
+    },
+    {
+      "skill_id": "fireball",
+      "name": "火球术",
+      "description": "向目标发射火球，造成火焰伤害",
+      "icon": "res://assets/icons/skills/fireball.png",
+      "type": "active",
+      "target_type": "enemy_single",
+      "cooldown": 3.0,
+      "cost": {
+        "type": "mana",
+        "value": 20
+      },
+      "cast_time": 0.5,
+      "range": 10.0,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 50,
+          "scaling": {
+            "stat": "intelligence",
+            "ratio": 0.8
+          },
+          "element": "fire",
+          "can_crit": true
+        }
+      ],
+      "animation": "cast_spell",
+      "projectile": "res://scenes/projectiles/fireball.tscn",
+      "sound": "res://audio/sfx/fireball_cast.ogg"
+    },
+    {
+      "skill_id": "heal",
+      "name": "治疗术",
+      "description": "恢复目标生命值",
+      "icon": "res://assets/icons/skills/heal.png",
+      "type": "active",
+      "target_type": "ally_single",
+      "cooldown": 8.0,
+      "cost": {
+        "type": "mana",
+        "value": 25
+      },
+      "cast_time": 1.0,
+      "range": 8.0,
+      "effects": [
+        {
+          "type": "heal",
+          "value": 60,
+          "scaling": {
+            "stat": "intelligence",
+            "ratio": 0.6
+          }
+        }
+      ],
+      "animation": "cast_spell",
+      "sound": "res://audio/sfx/heal_cast.ogg"
+    },
+    {
+      "skill_id": "charge",
+      "name": "冲锋",
+      "description": "向目标冲锋，造成伤害并眩晕",
+      "icon": "res://assets/icons/skills/charge.png",
+      "type": "active",
+      "target_type": "enemy_single",
+      "cooldown": 10.0,
+      "cost": {
+        "type": "stamina",
+        "value": 40
+      },
+      "cast_time": 0.2,
+      "range": 8.0,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 40,
+          "scaling": {
+            "stat": "strength",
+            "ratio": 0.6
+          },
+          "can_crit": true
+        },
+        {
+          "type": "debuff",
+          "debuff_type": "stun",
+          "duration": 1.5
+        },
+        {
+          "type": "teleport",
+          "target": "enemy"
+        }
+      ],
+      "animation": "charge",
+      "sound": "res://audio/sfx/charge.ogg"
+    },
+    {
+      "skill_id": "poison_blade",
+      "name": "毒刃",
+      "description": "用毒素涂抹武器，造成伤害并施加持续中毒效果",
+      "icon": "res://assets/icons/skills/poison_blade.png",
+      "type": "active",
+      "target_type": "enemy_single",
+      "cooldown": 6.0,
+      "cost": {
+        "type": "stamina",
+        "value": 25
+      },
+      "cast_time": 0.4,
+      "range": 2.0,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 30,
+          "scaling": {
+            "stat": "agility",
+            "ratio": 0.8
+          },
+          "element": "poison",
+          "can_crit": true
+        },
+        {
+          "type": "debuff",
+          "debuff_type": "poison",
+          "duration": 6.0,
+          "tick_damage": 5,
+          "tick_interval": 1.0
+        }
+      ],
+      "animation": "quick_attack",
+      "sound": "res://audio/sfx/poison_blade.ogg"
+    },
+    {
+      "skill_id": "shield_wall",
+      "name": "盾墙",
+      "description": "举起盾牌，大幅提升防御力",
+      "icon": "res://assets/icons/skills/shield_wall.png",
+      "type": "active",
+      "target_type": "self",
+      "cooldown": 15.0,
+      "cost": {
+        "type": "stamina",
+        "value": 20
+      },
+      "cast_time": 0.5,
+      "range": 0.0,
+      "effects": [
+        {
+          "type": "buff",
+          "buff_type": "defense",
+          "duration": 8.0,
+          "stat": "defense",
+          "value": 50,
+          "is_percentage": false
+        }
+      ],
+      "animation": "shield_up",
+      "sound": "res://audio/sfx/shield_wall.ogg"
+    },
+    {
+      "skill_id": "quick_shot",
+      "name": "速射",
+      "description": "快速射出一箭，造成中等伤害",
+      "icon": "res://assets/icons/skills/quick_shot.png",
+      "type": "active",
+      "target_type": "enemy_single",
+      "cooldown": 2.0,
+      "cost": {
+        "type": "stamina",
+        "value": 15
+      },
+      "cast_time": 0.3,
+      "range": 12.0,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 35,
+          "scaling": {
+            "stat": "agility",
+            "ratio": 0.7
+          },
+          "can_crit": true
+        }
+      ],
+      "animation": "shoot_bow",
+      "projectile": "res://scenes/projectiles/arrow.tscn",
+      "sound": "res://audio/sfx/bow_shot.ogg"
+    },
+    {
+      "skill_id": "whirlwind",
+      "name": "旋风斩",
+      "description": "旋转攻击周围所有敌人",
+      "icon": "res://assets/icons/skills/whirlwind.png",
+      "type": "active",
+      "target_type": "enemy_aoe",
+      "cooldown": 12.0,
+      "cost": {
+        "type": "stamina",
+        "value": 50
+      },
+      "cast_time": 0.8,
+      "range": 3.0,
+      "aoe_radius": 3.0,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 45,
+          "scaling": {
+            "stat": "strength",
+            "ratio": 0.9
+          },
+          "can_crit": true
+        }
+      ],
+      "animation": "spin_attack",
+      "sound": "res://audio/sfx/whirlwind.ogg"
+    },
+    {
+      "skill_id": "berserk",
+      "name": "狂暴",
+      "description": "进入狂暴状态，大幅提升攻击力但降低防御",
+      "icon": "res://assets/icons/skills/berserk.png",
+      "type": "active",
+      "target_type": "self",
+      "cooldown": 30.0,
+      "cost": {
+        "type": "health",
+        "value": 20
+      },
+      "cast_time": 0.5,
+      "range": 0.0,
+      "effects": [
+        {
+          "type": "buff",
+          "buff_type": "berserk",
+          "duration": 10.0,
+          "stats": [
+            {
+              "stat": "strength",
+              "value": 30,
+              "is_percentage": true
+            },
+            {
+              "stat": "defense",
+              "value": -20,
+              "is_percentage": true
+            }
+          ]
+        }
+      ],
+      "animation": "roar",
+      "sound": "res://audio/sfx/berserk.ogg"
+    },
+    {
+      "skill_id": "lightning_bolt",
+      "name": "闪电箭",
+      "description": "召唤闪电打击目标，造成雷电伤害",
+      "icon": "res://assets/icons/skills/lightning_bolt.png",
+      "type": "active",
+      "target_type": "enemy_single",
+      "cooldown": 4.0,
+      "cost": {
+        "type": "mana",
+        "value": 30
+      },
+      "cast_time": 0.6,
+      "range": 15.0,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 65,
+          "scaling": {
+            "stat": "intelligence",
+            "ratio": 1.0
+          },
+          "element": "lightning",
+          "can_crit": true
+        }
+      ],
+      "animation": "cast_spell",
+      "sound": "res://audio/sfx/lightning_bolt.ogg"
+    }
+  ]
+}
