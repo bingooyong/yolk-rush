@@ -146,10 +146,9 @@ func _initialize_systems() -> void:
 	skill_system = SkillSystemClass.new()
 	add_child(skill_system)
 
-	# 状态效果系统
+	# 状态效果系统（全局实例，实体会创建各自的系统）
 	status_effect_system = StatusEffectSystemClass.new()
 	add_child(status_effect_system)
-	status_effect_system.set_database(status_effect_database)
 
 	# AI管理器
 	ai_manager = AIManagerClass.new()
