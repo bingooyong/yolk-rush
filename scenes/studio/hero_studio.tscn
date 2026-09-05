@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://yolkrush_hero_studio"]
+
+[ext_resource type="Script" path="res://scenes/studio/hero_studio.gd" id="1"]
+
+[node name="HeroStudio" type="Node3D"]
+script = ExtResource("1")
