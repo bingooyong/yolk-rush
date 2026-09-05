@@ -14,12 +14,27 @@
   - 商店系统
   - 掉落系统
 
-- 🎨 **现代化 UI**
-  - 完整的游戏界面
-  - HUD 抬头显示
-  - 背包、装备、技能树面板
+- 🎨 **现代化 UI (Phase 19 升级完成)**
+  - 统一的深色设计系统
+  - 主菜单带动画效果
+  - 实时游戏 HUD（生命值、能量、技能、目标）
+  - 暂停菜单带统计显示
+  - 结算界面带评分系统 (S/A/B/C/F)
+  - 流畅的过渡动画和反馈
+  - 程序化 UI 生成，无需额外资源
+  - 完整的背包、装备、技能树面板
   - 成就和商店面板
   - 响应式设计
+
+- 🎨 **粒子效果系统 (Phase 20 完成)**
+  - 12种预制粒子效果（灰尘、火花、爆炸、轨迹等）
+  - 高性能池化系统（最多120个粒子复用）
+  - 玩家动作反馈（跳跃、着陆、冲刺、受击）
+  - 道具拾取特效（空闲发光、拾取闪光）
+  - 战斗视觉反馈（攻击、受击、技能、死亡）
+  - 关卡环境氛围（灰尘/雪花/雨滴）
+  - 完整的集成组件（4个集成类）
+  - 自动化事件检测
 
 - 💾 **数据驱动**
   - JSON 配置文件
@@ -81,6 +96,11 @@ godot --headless --script scripts/tests/phase_7_ui_complete_test.gd
 - [🏆 Phase 5: 成就系统](docs/PHASE_5_COMPLETE.md)
 - [🛒 Phase 6: 商店和掉落系统](docs/PHASE_6_COMPLETE.md)
 - [🎨 Phase 7: UI 系统](docs/PHASE_7_COMPLETE.md)
+- [🎵 Phase 16: 音效系统](docs/Phase_16_Audio.md)
+- [💾 Phase 17: 保存系统](docs/Phase_17_Save.md)
+- [🎮 Phase 19: 游戏循环](docs/Phase_19_Game_Loop.md)
+- [✨ Phase 20: 粒子效果系统](docs/Phase_20_VFX.md)
+- [🎨 Phase 20: VFX集成系统](docs/Phase_20_VFX_Integration.md)
 
 ## 🏗️ 项目结构
 
@@ -104,6 +124,12 @@ yolk-rush/
 │   ├── shop/              # 商店系统
 │   ├── drop/              # 掉落系统
 │   ├── ui/                # UI 系统
+│   ├── audio/             # 音效系统 (Phase 16)
+│   ├── vfx/               # 粒子效果系统 (Phase 20)
+│   ├── player/            # 玩家系统
+│   ├── items/             # 道具系统
+│   ├── combat/            # 战斗系统
+│   ├── level/             # 关卡系统
 │   └── tests/             # 测试脚本
 ├── scenes/                 # 游戏场景
 └── docs/                  # 文档
@@ -285,5 +311,5 @@ GameManager.skill_database._debug_print_stats()
 ---
 
 **当前版本**: v0.1.0-alpha  
-**最后更新**: 2024-01  
-**状态**: 核心系统开发完成 ✅
+**最后更新**: 2026-09-05  
+**状态**: 核心系统 + 视觉反馈系统完成 ✅

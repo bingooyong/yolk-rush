@@ -1,310 +1,365 @@
 extends Node
-## 游戏管理器 - 整合所有游戏系统
+class_name GameManager
+## 游戏管理器 - 协调UI、关卡、状态管理
 
-# 预加载所有类
-const LevelSystemClass = preload("res://scripts/progression/level_system.gd")
-const StatsSystemClass = preload("res://scripts/progression/stats_system.gd")
-const EquipmentSystemClass = preload("res://scripts/equipment/equipment_system.gd")
-const EquipmentDatabaseClass = preload("res://scripts/equipment/equipment_database.gd")
-const InventorySystemClass = preload("res://scripts/inventory/inventory_system.gd")
-const QuickBarSystemClass = preload("res://scripts/inventory/quick_bar_system.gd")
-const ItemDatabaseClass = preload("res://scripts/inventory/item_database.gd")
-const SkillTreeSystemClass = preload("res://scripts/skill_tree/skill_tree_system.gd")
-const SkillDatabaseClass = preload("res://scripts/skill_tree/skill_database.gd")
-const AchievementSystemClass = preload("res://scripts/achievement/achievement_system.gd")
-const AchievementDatabaseClass = preload("res://scripts/achievement/achievement_database.gd")
-const ShopSystemClass = preload("res://scripts/shop/shop_system.gd")
-const ShopDatabaseClass = preload("res://scripts/shop/shop_database.gd")
-const DropSystemClass = preload("res://scripts/drop/drop_system.gd")
-const DropDatabaseClass = preload("res://scripts/drop/drop_database.gd")
-const SaveManagerClass = preload("res://scripts/core/save_manager.gd")
-const SkillSystemClass = preload("res://scripts/skill/skill_system.gd")
-const StatusEffectSystemClass = preload("res://scripts/status/status_effect_system.gd")
-const StatusEffectDatabaseClass = preload("res://scripts/status/status_effect_database.gd")
-const AIManagerClass = preload("res://scripts/ai/ai_manager.gd")
+# 预加载所有依赖类
+const MainMenuScript = preload("res://scenes/ui/main_menu.gd")
+const GameHUDScript = preload("res://scenes/ui/game_hud.gd")
+const PauseMenuScript = preload("res://scenes/ui/pause_menu.gd")
+const SettingsMenuScript = preload("res://scenes/ui/settings_menu.gd")
+const LevelSelectMenuScript = preload("res://scenes/ui/level_select_menu.gd")
+const GameOverUIScript = preload("res://scenes/ui/game_over_ui.gd")
+const LevelManagerScript = preload("res://scripts/map/level_manager.gd")
 
-signal game_initialized()
-signal systems_ready()
+enum GameState {
+	MAIN_MENU,
+	LEVEL_SELECT,
+	LOADING,
+	PLAYING,
+	PAUSED,
+	GAME_OVER,
+	VICTORY
+}
 
-# 系统引用（动态加载，不使用preload）
-var level_system
-var stats_system
-var equipment_system
-var inventory_system
-var quick_bar_system
-var skill_tree_system
-var achievement_system
-var shop_system
-var drop_system
-var save_manager
-var skill_system
-var status_effect_system
-var ai_manager
+signal state_changed(old_state: GameState, new_state: GameState)
+signal game_started()
+signal game_paused()
+signal game_resumed()
+signal game_over()
 
-# 数据库引用
-var equipment_database
-var item_database
-var skill_database
-var achievement_database
-var shop_database
-var drop_database
-var status_effect_database
+# UI 组件
+var main_menu
+var game_hud
+var pause_menu
+var settings_menu
+var level_select_menu
+var game_over_ui
 
-var is_initialized = false
+# 系统组件
+var level_manager
+
+# 状态
+var current_state: GameState = GameState.MAIN_MENU
+var previous_state: GameState = GameState.MAIN_MENU
+
+# 玩家引用
+var player: Node3D = null
 
 func _ready() -> void:
-	print("[GameManager] Initializing...")
-	_initialize_databases()
-	_initialize_systems()
-	_connect_systems()
-	_register_save_systems()
+	_setup_ui()
+	_setup_systems()
+	print("[GameManager] Initialized")
 
-	is_initialized = true
-	print("[GameManager] All systems initialized")
-	game_initialized.emit()
+	# 默认显示主菜单
+	change_state(GameState.MAIN_MENU)
 
-## 初始化所有数据库
-func _initialize_databases() -> void:
-	print("[GameManager] Loading databases...")
+func _setup_ui() -> void:
+	# 创建主菜单
+	main_menu = MainMenuScript.new()
+	main_menu.name = "MainMenu"
+	main_menu.start_game_pressed.connect(_on_start_game)
+	main_menu.settings_pressed.connect(_on_show_settings)
+	main_menu.quit_pressed.connect(_on_quit_game)
+	add_child(main_menu)
 
-	equipment_database = EquipmentDatabaseClass.new()
-	add_child(equipment_database)
+	# 创建关卡选择菜单
+	level_select_menu = LevelSelectMenuScript.new()
+	level_select_menu.name = "LevelSelectMenu"
+	level_select_menu.level_selected.connect(_on_level_selected)
+	level_select_menu.back_pressed.connect(_on_level_select_back)
+	level_select_menu.hide_menu()
+	add_child(level_select_menu)
 
-	item_database = ItemDatabaseClass.new()
-	add_child(item_database)
+	# 创建游戏 HUD
+	game_hud = GameHUDScript.new()
+	game_hud.name = "GameHUD"
+	game_hud.skill_activated.connect(_on_skill_activated)
+	game_hud.pause_requested.connect(_on_pause_game)
+	game_hud.hide_hud()
+	add_child(game_hud)
 
-	skill_database = SkillDatabaseClass.new()
-	add_child(skill_database)
+	# 创建暂停菜单
+	pause_menu = PauseMenuScript.new()
+	pause_menu.name = "PauseMenu"
+	pause_menu.resume_pressed.connect(_on_resume_game)
+	pause_menu.settings_pressed.connect(_on_show_settings)
+	pause_menu.main_menu_pressed.connect(_on_return_to_main_menu)
+	add_child(pause_menu)
 
-	achievement_database = AchievementDatabaseClass.new()
-	add_child(achievement_database)
+	# 创建游戏结算UI
+	game_over_ui = GameOverUIScript.new()
+	game_over_ui.name = "GameOverUI"
+	game_over_ui.retry_pressed.connect(_on_retry_game)
+	game_over_ui.next_level_pressed.connect(_on_next_level)
+	game_over_ui.main_menu_pressed.connect(_on_return_to_main_menu)
+	game_over_ui.hide_ui()
+	add_child(game_over_ui)
 
-	shop_database = ShopDatabaseClass.new()
-	add_child(shop_database)
+	# 创建设置菜单
+	settings_menu = SettingsMenuScript.new()
+	settings_menu.name = "SettingsMenu"
+	settings_menu.settings_changed.connect(_on_settings_changed)
+	settings_menu.back_pressed.connect(_on_settings_back)
+	settings_menu.hide_menu()
+	add_child(settings_menu)
 
-	drop_database = DropDatabaseClass.new()
-	add_child(drop_database)
+func _setup_systems() -> void:
+	# 创建关卡管理器
+	level_manager = LevelManagerScript.new()
+	level_manager.name = "LevelManager"
+	level_manager.level_loaded.connect(_on_level_loaded)
+	level_manager.level_unloaded.connect(_on_level_unloaded)
+	add_child(level_manager)
 
-	status_effect_database = StatusEffectDatabaseClass.new()
-	add_child(status_effect_database)
+func _input(event: InputEvent) -> void:
+	# ESC 键处理
+	if event.is_action_pressed("ui_cancel"):
+		match current_state:
+			GameState.PLAYING:
+				_on_pause_game()
+			GameState.PAUSED:
+				if settings_menu.visible:
+					_on_settings_back()
+				else:
+					_on_resume_game()
 
-	print("[GameManager] Databases loaded")
-
-## 初始化所有系统
-func _initialize_systems() -> void:
-	print("[GameManager] Initializing systems...")
-
-	# 等级和属性系统
-	level_system = LevelSystemClass.new()
-	add_child(level_system)
-
-	stats_system = StatsSystemClass.new()
-	add_child(stats_system)
-
-	# 装备系统
-	equipment_system = EquipmentSystemClass.new()
-	add_child(equipment_system)
-	equipment_system.set_database(equipment_database)
-
-	# 背包系统
-	inventory_system = InventorySystemClass.new()
-	add_child(inventory_system)
-	inventory_system.set_database(item_database)
-
-	quick_bar_system = QuickBarSystemClass.new()
-	add_child(quick_bar_system)
-	quick_bar_system.set_inventory(inventory_system)
-
-	# 技能树系统
-	skill_tree_system = SkillTreeSystemClass.new()
-	add_child(skill_tree_system)
-	skill_tree_system.set_database(skill_database)
-
-	# 成就系统
-	achievement_system = AchievementSystemClass.new()
-	add_child(achievement_system)
-	achievement_system.set_database(achievement_database)
-
-	# 商店系统
-	shop_system = ShopSystemClass.new()
-	add_child(shop_system)
-	shop_system.set_database(shop_database)
-
-	# 掉落系统
-	drop_system = DropSystemClass.new()
-	add_child(drop_system)
-	drop_system.set_database(drop_database)
-
-	# 存档管理器
-	save_manager = SaveManagerClass.new()
-	if save_manager:
-		add_child(save_manager)
-	else:
-		push_warning("[GameManager] Failed to create SaveManager")
-
-	# 技能系统
-	skill_system = SkillSystemClass.new()
-	add_child(skill_system)
-
-	# 状态效果系统（全局实例，实体会创建各自的系统）
-	status_effect_system = StatusEffectSystemClass.new()
-	add_child(status_effect_system)
-
-	# AI管理器
-	ai_manager = AIManagerClass.new()
-	add_child(ai_manager)
-
-	print("[GameManager] Systems initialized")
-	systems_ready.emit()
-
-## 连接系统之间的信号
-func _connect_systems() -> void:
-	print("[GameManager] Connecting systems...")
-
-	# 等级提升 -> 技能点
-	level_system.level_up.connect(_on_level_up)
-
-	# 装备变化 -> 属性更新
-	equipment_system.equipment_changed.connect(_on_equipment_changed)
-
-	# 敌人击杀 -> 经验值、掉落、成就
-	# (由战斗系统调用 on_enemy_killed)
-
-	print("[GameManager] Systems connected")
-
-## 注册需要存档的系统
-func _register_save_systems() -> void:
-	print("[GameManager] Registering save systems...")
-
-	if not save_manager:
-		push_warning("[GameManager] SaveManager not available, skipping registration")
+## 改变游戏状态
+func change_state(new_state: GameState) -> void:
+	if new_state == current_state:
 		return
 
-	save_manager.register_system("level", level_system)
-	save_manager.register_system("stats", stats_system)
-	save_manager.register_system("equipment", equipment_system)
-	save_manager.register_system("inventory", inventory_system)
-	save_manager.register_system("quick_bar", quick_bar_system)
-	save_manager.register_system("skill_tree", skill_tree_system)
-	save_manager.register_system("achievement", achievement_system)
-	save_manager.register_system("shop", shop_system)
+	var old_state = current_state
+	previous_state = old_state
+	current_state = new_state
 
-	print("[GameManager] Save systems registered")
+	print("[GameManager] State: %s -> %s" % [
+		GameState.keys()[old_state],
+		GameState.keys()[new_state]
+	])
 
-## 玩家升级时
-func _on_level_up(new_level: int) -> void:
-	# 给予技能点
-	skill_tree_system.add_skill_points(1)
-	skill_tree_system.set_player_level(new_level)
+	# 执行状态转换
+	_exit_state(old_state)
+	_enter_state(new_state)
 
-	# 更新商店可用等级
-	shop_system.set_player_level(new_level)
+	state_changed.emit(old_state, new_state)
 
-	# 检查成就
-	achievement_system.check_achievement("reach_level_10")
-	achievement_system.check_achievement("reach_level_25")
-	achievement_system.check_achievement("reach_level_50")
+func _exit_state(state: GameState) -> void:
+	match state:
+		GameState.MAIN_MENU:
+			main_menu.hide_menu()
 
-## 装备变化时
-func _on_equipment_changed(slot, item) -> void:
-	# 可以在这里更新 UI 或触发其他效果
-	pass
+		GameState.LEVEL_SELECT:
+			level_select_menu.hide_menu()
 
-## 敌人击杀回调
-func on_enemy_killed(enemy_type: String, enemy_level: int) -> void:
-	# 获取幸运加成
-	var luck_bonus = stats_system.get_stat_bonus("drop_rate")
+		GameState.PLAYING:
+			game_hud.hide_hud()
 
-	# 生成掉落
-	var drops = drop_system.generate_enemy_drops(enemy_type, enemy_level, luck_bonus)
+		GameState.PAUSED:
+			pause_menu.hide_menu()
 
-	# 添加到背包
-	for drop in drops:
-		var item = item_database.get_item_by_id(drop.item_id)
-		if item:
-			inventory_system.add_item(item, drop.quantity)
+		GameState.GAME_OVER, GameState.VICTORY:
+			game_over_ui.hide_ui()
 
-	# 生成金币
-	var gold = drop_system.generate_gold_drop(10, enemy_level, luck_bonus)
-	shop_system.set_player_gold(shop_system.get_player_gold() + gold)
+func _enter_state(state: GameState) -> void:
+	match state:
+		GameState.MAIN_MENU:
+			main_menu.show_menu()
+			game_hud.hide_hud()
+			pause_menu.hide_menu()
+			level_select_menu.hide_menu()
+			game_over_ui.hide_ui()
 
-	# 生成经验值
-	var exp = drop_system.generate_exp_drop(50, enemy_level)
-	level_system.add_exp(exp)
+		GameState.LEVEL_SELECT:
+			main_menu.hide_menu()
+			level_select_menu.show_menu()
+			game_hud.hide_hud()
 
-	# 更新成就
-	achievement_system.increment_progress("kill_100_enemies", 1)
-	achievement_system.increment_progress("kill_1000_enemies", 1)
+		GameState.LOADING:
+			# 显示加载界面（如果有）
+			pass
 
-## 获取玩家总属性（装备+技能+基础）
-func get_total_player_stats() -> Dictionary:
-	var base_stats = stats_system.get_all_bonuses()
-	var equipment_stats = equipment_system.get_total_stats()
-	var skill_bonuses = skill_tree_system.get_total_skill_bonuses()
+		GameState.PLAYING:
+			main_menu.hide_menu()
+			level_select_menu.hide_menu()
+			game_hud.show_hud()
+			pause_menu.hide_menu()
+			game_over_ui.hide_ui()
 
-	var total = {}
+		GameState.PAUSED:
+			pause_menu.show_menu()
 
-	# 合并所有属性
-	for stat_name in base_stats.keys():
-		total[stat_name] = base_stats[stat_name]
+		GameState.GAME_OVER:
+			game_hud.hide_hud()
+			_show_game_over(false)
 
-	for stat_name in equipment_stats.keys():
-		if total.has(stat_name):
-			total[stat_name] += equipment_stats[stat_name]
-		else:
-			total[stat_name] = equipment_stats[stat_name]
+		GameState.VICTORY:
+			game_hud.hide_hud()
+			_show_game_over(true)
 
-	for bonus_name in skill_bonuses.keys():
-		if total.has(bonus_name):
-			total[bonus_name] += skill_bonuses[bonus_name]
-		else:
-			total[bonus_name] = skill_bonuses[bonus_name]
+## === 信号处理 ===
 
-	return total
+func _on_start_game() -> void:
+	print("[GameManager] Opening level select...")
+	change_state(GameState.LEVEL_SELECT)
 
-## 获取玩家信息摘要
-func get_player_summary() -> Dictionary:
-	return {
-		"level": level_system.current_level,
-		"exp": level_system.current_exp,
-		"gold": shop_system.get_player_gold(),
-		"skill_points": skill_tree_system.available_skill_points,
-		"total_stats": get_total_player_stats(),
-		"equipment_score": equipment_system.get_equipment_score(),
-		"achievements_unlocked": achievement_system.get_unlocked_count()
+func _on_level_selected(level_id: int) -> void:
+	print("[GameManager] Starting level %d..." % level_id)
+	change_state(GameState.LOADING)
+
+	# 生成随机地图
+	var map_config = {
+		"seed": randi(),
+		"map_size": Vector2i(3, 3),
+		"chunk_size": 16,
+		"tile_size": 2.0,
+		"enemy_spawn_count": 5,
+		"objective_count": 2
 	}
 
-## 新游戏
-func new_game() -> void:
-	print("[GameManager] Starting new game...")
+	# 加载关卡
+	var success = level_manager.load_level(map_config)
 
-	level_system.current_level = 1
-	level_system.current_exp = 0
+	if success:
+		game_started.emit()
+		change_state(GameState.PLAYING)
 
-	stats_system.available_stat_points = 0
+		# 更新 HUD
+		game_hud.update_player_health(100, 100)
+		game_hud.update_player_energy(100, 100)
+		game_hud.update_player_level(1, 0, 100)
+		game_hud.add_objective("探索地图")
+		game_hud.add_objective("击败所有敌人")
+	else:
+		push_error("[GameManager] Failed to load level")
+		change_state(GameState.LEVEL_SELECT)
 
-	equipment_system.unequip_all()
-	inventory_system.clear_all()
-	quick_bar_system.clear_all()
+func _on_level_select_back() -> void:
+	change_state(GameState.MAIN_MENU)
 
-	skill_tree_system.reset_skills()
-	skill_tree_system.available_skill_points = 0
+func _on_pause_game() -> void:
+	if current_state == GameState.PLAYING:
+		change_state(GameState.PAUSED)
+		game_paused.emit()
 
-	achievement_system.reset_all_achievements()
+func _on_resume_game() -> void:
+	if current_state == GameState.PAUSED:
+		change_state(GameState.PLAYING)
+		game_resumed.emit()
 
-	shop_system.set_player_gold(1000)
-	shop_system.refresh_shop()
+func _on_show_settings() -> void:
+	settings_menu.show_menu()
 
-	print("[GameManager] New game started")
+func _on_settings_back() -> void:
+	settings_menu.hide_menu()
 
-## 获取状态效果系统
-func get_status_effect_system():
-	return status_effect_system
+func _on_settings_changed(settings: Dictionary) -> void:
+	print("[GameManager] Settings changed: %s" % settings)
 
-## 获取技能系统
-func get_skill_system():
-	return skill_system
+func _on_return_to_main_menu() -> void:
+	print("[GameManager] Returning to main menu...")
 
-## 获取AI管理器
-func get_ai_manager():
-	return ai_manager
+	# 卸载关卡
+	if level_manager.is_level_loaded():
+		level_manager.unload_level()
+
+	change_state(GameState.MAIN_MENU)
+
+func _on_quit_game() -> void:
+	print("[GameManager] Quitting game...")
+	get_tree().quit()
+
+func _on_skill_activated(slot: int) -> void:
+	print("[GameManager] Skill %d activated" % slot)
+	# TODO: 通知玩家/技能系统
+
+	# 模拟冷却
+	game_hud.set_skill_cooldown(slot, 5.0)
+
+func _on_retry_game() -> void:
+	print("[GameManager] Retrying level...")
+	change_state(GameState.LOADING)
+	# 重新加载当前关卡
+	await get_tree().create_timer(0.5).timeout
+	change_state(GameState.PLAYING)
+
+func _on_next_level() -> void:
+	print("[GameManager] Loading next level...")
+	change_state(GameState.LOADING)
+	# 加载下一关
+	await get_tree().create_timer(0.5).timeout
+	change_state(GameState.PLAYING)
+
+## 显示游戏结算界面
+func _show_game_over(victory: bool) -> void:
+	# 获取关卡统计数据
+	var game_state_manager = _find_game_state_manager()
+	var stats = {}
+
+	if game_state_manager:
+		stats = game_state_manager.get_level_stats()
+	else:
+		# 默认统计
+		stats = {
+			"play_time": 120.0,
+			"enemies_defeated": 5,
+			"items_collected": 3,
+			"damage_taken": 25,
+			"skills_used": 8,
+			"completed": victory
+		}
+
+	var result_type = GameOverUIScript.ResultType.VICTORY if victory else GameOverUIScript.ResultType.DEFEAT
+	game_over_ui.show_result(result_type, stats)
+
+## 查找GameStateManager
+func _find_game_state_manager() -> Node:
+	if has_node("/root/GameStateManager"):
+		return get_node("/root/GameStateManager")
+	return null
+
+func _on_level_loaded(map_data) -> void:
+	print("[GameManager] Level loaded successfully")
+	print("[GameManager] Chunks: %d" % map_data.chunks.size())
+	print("[GameManager] Waypoints: %d" % map_data.waypoints.size())
+
+	# 获取玩家生成点
+	var spawn_pos = level_manager.get_player_spawn_position()
+	print("[GameManager] Player spawn: %s" % spawn_pos)
+
+	# TODO: 生成玩家
+	# TODO: 生成敌人
+
+func _on_level_unloaded() -> void:
+	print("[GameManager] Level unloaded")
+
+## === 玩家相关 ===
+
+func set_player(p: Node3D) -> void:
+	player = p
+	print("[GameManager] Player set: %s" % player.name)
+
+	# 连接玩家信号（如果有）
+	# player.health_changed.connect(_on_player_health_changed)
+	# player.energy_changed.connect(_on_player_energy_changed)
+
+func _on_player_health_changed(current: float, maximum: float) -> void:
+	game_hud.update_player_health(current, maximum)
+
+func _on_player_energy_changed(current: float, maximum: float) -> void:
+	game_hud.update_player_energy(current, maximum)
+
+func _on_player_died() -> void:
+	print("[GameManager] Player died")
+	change_state(GameState.GAME_OVER)
+	game_over.emit()
+
+## === 实用方法 ===
+
+func is_playing() -> bool:
+	return current_state == GameState.PLAYING
+
+func is_paused() -> bool:
+	return current_state == GameState.PAUSED
+
+func get_current_map():
+	return level_manager.get_current_map()

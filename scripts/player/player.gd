@@ -8,8 +8,14 @@ const MOUSE_SENSITIVITY = 0.002
 # 玩家状态
 var health: float = 100.0
 var max_health: float = 100.0
+var score: int = 0
 var is_attacking: bool = false
 var attack_cooldown: float = 0.0
+
+# 战斗属性
+var attack_damage: int = 20
+var attack_range: float = 2.0
+var attack_angle: float = 90.0
 
 # 引用
 @onready var camera: Camera3D = $Camera3D
@@ -17,8 +23,12 @@ var attack_cooldown: float = 0.0
 
 signal health_changed(current: float, maximum: float)
 signal player_died()
+signal score_changed(new_score: int)
 
 func _ready() -> void:
+	# 添加到玩家组
+	add_to_group("player")
+
 	# 捕获鼠标
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -81,19 +91,15 @@ func _perform_attack() -> void:
 	is_attacking = true
 	attack_cooldown = 1.0  # 1秒攻击间隔
 
-	# 获取玩家总属性
-	var stats = GameManager.get_total_player_stats()
-	var damage = stats.get("physical_damage", 10)
+	print("[Player] Attack! Damage: %d" % attack_damage)
 
-	print("[Player] Attack! Damage: %d" % damage)
+	# 使用战斗系统执行近战攻击
+	var hit_targets = CombatSystem.perform_melee_attack(self, attack_damage, attack_range, attack_angle)
 
-	# 检测攻击范围内的敌人
-	if attack_area:
-		var enemies = attack_area.get_overlapping_bodies()
-		for enemy in enemies:
-			if enemy.has_method("take_damage"):
-				enemy.take_damage(damage)
-				print("[Player] Hit enemy for %d damage" % damage)
+	if hit_targets.size() > 0:
+		print("[Player] Hit %d enemies" % hit_targets.size())
+	else:
+		print("[Player] Attack missed")
 
 ## 受到伤害
 func take_damage(amount: float) -> void:
@@ -133,6 +139,7 @@ func _respawn() -> void:
 ## 更新属性
 func _update_stats() -> void:
 	if not GameManager:
+		max_health = 100.0
 		return
 
 	var stats = GameManager.get_total_player_stats()
@@ -142,8 +149,17 @@ func _update_stats() -> void:
 	var vitality_bonus = stats.get("max_health", 0)
 	max_health = base_health + vitality_bonus
 
+	# 更新攻击力
+	attack_damage = stats.get("physical_damage", 20)
+
 	# 确保当前生命值不超过最大值
 	health = min(health, max_health)
+
+## 增加分数
+func add_score(amount: int) -> void:
+	score += amount
+	score_changed.emit(score)
+	print("[Player] Score: %d (+%d)" % [score, amount])
 
 ## 升级时更新属性
 func _on_level_up(new_level: int) -> void:

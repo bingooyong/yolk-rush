@@ -1,211 +1,398 @@
 extends Node
-## 音效管理器 - 不使用 class_name 以避免与 Autoload 单例名称冲突
-## Phase 6: 音效系统
+## 音效管理器 - 统一管理游戏音效和音乐
 
-## 音效类型
-enum SFXType {
-	FOOTSTEP,
-	JUMP,
-	LAND,
-	ATTACK_LIGHT,
-	ATTACK_HEAVY,
-	SKILL_CAST,
-	HIT_RECEIVED,
-	DEATH,
-	UI_CLICK,
-	UI_HOVER,
-}
+const AudioSynthesizer = preload("res://scripts/audio/audio_synthesizer.gd")
 
-## 音乐类型
-enum MusicType {
-	MENU,
-	BATTLE,
-	VICTORY,
-	DEFEAT,
-}
+signal music_changed(track_name: String)
+signal sfx_played(sfx_name: String)
+signal volume_changed(bus: String, volume: float)
 
-## 音效音量
-@export var sfx_volume: float = 0.8
-@export var music_volume: float = 0.6
+## 音频总线名称
+const BUS_MASTER = "Master"
+const BUS_MUSIC = "Music"
+const BUS_SFX = "SFX"
+const BUS_UI = "UI"
 
-## 音频总线
-const BUS_MASTER := "Master"
-const BUS_SFX := "SFX"
-const BUS_MUSIC := "Music"
+## 音效池
+var sfx_players: Dictionary = {}  # sfx_name -> Array[AudioStreamPlayer]
+var sfx_pool_size: int = 5  # 每种音效的播放器数量
 
-## 当前播放的音乐
-var current_music: AudioStreamPlayer = null
+## 音乐播放器
+var music_player: AudioStreamPlayer = null
+var current_music_track: String = ""
+var music_fade_duration: float = 1.0
 
-## 音效池（避免重复创建）
-var sfx_players: Array[AudioStreamPlayer] = []
-var max_sfx_players := 32
+## 音量设置（0.0 - 1.0）
+var master_volume: float = 1.0
+var music_volume: float = 0.8
+var sfx_volume: float = 1.0
+var ui_volume: float = 1.0
+
+## 音效资源缓存
+var sfx_cache: Dictionary = {}  # sfx_name -> AudioStream
+var music_cache: Dictionary = {}  # track_name -> AudioStream
+
+## 3D音效支持
+var audio_listener: AudioListener3D = null
 
 func _ready() -> void:
-	# 预创建音效播放器池
-	for i in range(max_sfx_players):
-		var player := AudioStreamPlayer.new()
-		player.bus = BUS_SFX
-		add_child(player)
-		sfx_players.append(player)
-
-	# 应用音量设置
+	_setup_music_player()
+	_load_audio_settings()
 	_apply_volume_settings()
+	_preload_synthesized_sounds()
 
-## 播放音效
-func play_sfx(type: SFXType, pitch_variation: float = 0.1) -> void:
-	var stream := _get_sfx_stream(type)
-	if not stream:
+	print("[AudioManager] Initialized")
+
+## 预加载程序化音效
+func _preload_synthesized_sounds() -> void:
+	var preset_names = AudioSynthesizer.get_preset_names()
+	for preset_name in preset_names:
+		var stream = AudioSynthesizer.generate_sound(preset_name)
+		if stream:
+			sfx_cache[preset_name] = stream
+
+	print("[AudioManager] Preloaded %d synthesized sounds" % preset_names.size())
+
+## 设置音乐播放器
+func _setup_music_player() -> void:
+	music_player = AudioStreamPlayer.new()
+	music_player.name = "MusicPlayer"
+	music_player.bus = BUS_MUSIC
+	add_child(music_player)
+
+## 加载音频设置
+func _load_audio_settings() -> void:
+	# 从存档系统加载设置
+	var save_system = _get_save_system()
+	if save_system:
+		master_volume = save_system.get_setting("master_volume", 1.0)
+		music_volume = save_system.get_setting("music_volume", 0.8)
+		sfx_volume = save_system.get_setting("sfx_volume", 1.0)
+		ui_volume = save_system.get_setting("ui_volume", 1.0)
+
+## 获取存档系统
+func _get_save_system():
+	var flow_manager = get_node_or_null("/root/GameFlowManager")
+	if flow_manager and flow_manager.save_system:
+		return flow_manager.save_system
+	return null
+
+## === 音乐控制 ===
+
+## 播放音乐
+func play_music(track_name: String, fade_in: bool = true) -> void:
+	if track_name == current_music_track and music_player.playing:
 		return
 
-	# 从池中获取空闲播放器
-	var player := _get_free_player()
+	# 加载音乐资源
+	var stream = _load_music(track_name)
+	if not stream:
+		push_warning("[AudioManager] Music not found: %s" % track_name)
+		return
+
+	# 淡出当前音乐
+	if music_player.playing and fade_in:
+		await _fade_out_music()
+
+	# 播放新音乐
+	music_player.stream = stream
+	music_player.play()
+	current_music_track = track_name
+
+	# 淡入
+	if fade_in:
+		_fade_in_music()
+
+	music_changed.emit(track_name)
+	print("[AudioManager] Playing music: %s" % track_name)
+
+## 停止音乐
+func stop_music(fade_out: bool = true) -> void:
+	if not music_player.playing:
+		return
+
+	if fade_out:
+		await _fade_out_music()
+	else:
+		music_player.stop()
+
+	current_music_track = ""
+
+## 暂停音乐
+func pause_music() -> void:
+	music_player.stream_paused = true
+
+## 恢复音乐
+func resume_music() -> void:
+	music_player.stream_paused = false
+
+## 淡入音乐
+func _fade_in_music() -> void:
+	music_player.volume_db = -80.0
+
+	var tween = create_tween()
+	tween.tween_property(music_player, "volume_db", 0.0, music_fade_duration)
+
+## 淡出音乐
+func _fade_out_music() -> void:
+	var tween = create_tween()
+	tween.tween_property(music_player, "volume_db", -80.0, music_fade_duration)
+	await tween.finished
+
+	music_player.stop()
+
+## === 音效控制 ===
+
+## 播放音效
+func play_sfx(sfx_name: String, volume_db: float = 0.0, pitch_scale: float = 1.0) -> void:
+	var stream = _load_sfx(sfx_name)
+	if not stream:
+		push_warning("[AudioManager] SFX not found: %s" % sfx_name)
+		return
+
+	var player = _get_available_player(sfx_name)
 	if not player:
 		return
 
 	player.stream = stream
-	player.volume_db = linear_to_db(sfx_volume)
-	player.pitch_scale = randf_range(1.0 - pitch_variation, 1.0 + pitch_variation)
+	player.volume_db = volume_db
+	player.pitch_scale = pitch_scale
 	player.play()
 
-## 播放音效（3D空间）
-func play_sfx_3d(type: SFXType, position: Vector3, parent: Node3D) -> void:
-	var stream := _get_sfx_stream(type)
+	sfx_played.emit(sfx_name)
+
+## 播放 UI 音效
+func play_ui_sound(sfx_name: String) -> void:
+	play_ui_sfx(sfx_name)
+
+## 播放 UI 音效
+func play_ui_sfx(sfx_name: String) -> void:
+	var stream = _load_sfx(sfx_name)
 	if not stream:
 		return
 
-	var player := AudioStreamPlayer3D.new()
+	var player = AudioStreamPlayer.new()
+	player.stream = stream
+	player.bus = BUS_UI
+	add_child(player)
+
+	player.finished.connect(func(): player.queue_free())
+	player.play()
+
+	sfx_played.emit(sfx_name)
+
+## 播放 3D 音效
+func play_sfx_3d(sfx_name: String, world_position: Vector3, volume_db: float = 0.0) -> void:
+	var stream = _load_sfx(sfx_name)
+	if not stream:
+		return
+
+	var player = AudioStreamPlayer3D.new()
 	player.stream = stream
 	player.bus = BUS_SFX
-	player.volume_db = linear_to_db(sfx_volume)
-	player.position = position
-	player.max_distance = 20.0
-	player.attenuation_filter_cutoff_hz = 5000.0
+	player.volume_db = volume_db
+	player.global_position = world_position
 
-	parent.add_child(player)
+	# 添加到场景
+	get_tree().root.add_child(player)
+
+	player.finished.connect(func(): player.queue_free())
 	player.play()
 
-	# 播放完毕后删除
-	await player.finished
-	player.queue_free()
+	sfx_played.emit(sfx_name)
 
-## 播放音乐
-func play_music(type: MusicType, fade_duration: float = 1.0) -> void:
-	var stream := _get_music_stream(type)
-	if not stream:
-		return
+## 获取可用的音效播放器
+func _get_available_player(sfx_name: String) -> AudioStreamPlayer:
+	# 检查是否已有播放器池
+	if not sfx_players.has(sfx_name):
+		sfx_players[sfx_name] = []
 
-	# 如果已经在播放相同音乐，不重复播放
-	if current_music and current_music.stream == stream:
-		return
+	var players = sfx_players[sfx_name]
 
-	# 淡出当前音乐
-	if current_music:
-		var fade_out := create_tween()
-		fade_out.tween_property(current_music, "volume_db", -80.0, fade_duration)
-		await fade_out.finished
-		current_music.stop()
-		current_music.queue_free()
+	# 查找空闲的播放器
+	for player in players:
+		if not player.playing:
+			return player
 
-	# 创建新音乐播放器
-	current_music = AudioStreamPlayer.new()
-	current_music.stream = stream
-	current_music.bus = BUS_MUSIC
-	current_music.volume_db = -80.0  # 从静音开始
-	add_child(current_music)
-	current_music.play()
+	# 如果池未满，创建新播放器
+	if players.size() < sfx_pool_size:
+		var player = AudioStreamPlayer.new()
+		player.name = "SFX_%s_%d" % [sfx_name, players.size()]
+		player.bus = BUS_SFX
+		add_child(player)
+		players.append(player)
+		return player
 
-	# 淡入新音乐
-	var fade_in := create_tween()
-	fade_in.tween_property(current_music, "volume_db", linear_to_db(music_volume), fade_duration)
+	# 池已满，使用最旧的播放器
+	return players[0]
 
-## 停止音乐
-func stop_music(fade_duration: float = 1.0) -> void:
-	if not current_music:
-		return
+## === 音量控制 ===
 
-	var fade_out := create_tween()
-	fade_out.tween_property(current_music, "volume_db", -80.0, fade_duration)
-	await fade_out.finished
-
-	current_music.stop()
-	current_music.queue_free()
-	current_music = null
-
-## 设置音效音量
-func set_sfx_volume(volume: float) -> void:
-	sfx_volume = clampf(volume, 0.0, 1.0)
-	AudioServer.set_bus_volume_db(
-		AudioServer.get_bus_index(BUS_SFX),
-		linear_to_db(sfx_volume)
-	)
+## 设置主音量
+func set_master_volume(volume: float) -> void:
+	master_volume = clampf(volume, 0.0, 1.0)
+	_apply_bus_volume(BUS_MASTER, master_volume)
+	_save_volume_setting("master_volume", master_volume)
+	volume_changed.emit(BUS_MASTER, master_volume)
 
 ## 设置音乐音量
 func set_music_volume(volume: float) -> void:
 	music_volume = clampf(volume, 0.0, 1.0)
-	AudioServer.set_bus_volume_db(
-		AudioServer.get_bus_index(BUS_MUSIC),
-		linear_to_db(music_volume)
-	)
-	if current_music:
-		current_music.volume_db = linear_to_db(music_volume)
+	_apply_bus_volume(BUS_MUSIC, music_volume)
+	_save_volume_setting("music_volume", music_volume)
+	volume_changed.emit(BUS_MUSIC, music_volume)
 
-## 获取空闲播放器
-func _get_free_player() -> AudioStreamPlayer:
-	for player in sfx_players:
-		if not player.playing:
-			return player
-	# 如果都在播放，返回第一个（会被打断）
-	return sfx_players[0]
+## 设置音效音量
+func set_sfx_volume(volume: float) -> void:
+	sfx_volume = clampf(volume, 0.0, 1.0)
+	_apply_bus_volume(BUS_SFX, sfx_volume)
+	_save_volume_setting("sfx_volume", sfx_volume)
+	volume_changed.emit(BUS_SFX, sfx_volume)
 
-## 应用音量设置
+## 设置UI音量
+func set_ui_volume(volume: float) -> void:
+	ui_volume = clampf(volume, 0.0, 1.0)
+	_apply_bus_volume(BUS_UI, ui_volume)
+	_save_volume_setting("ui_volume", ui_volume)
+	volume_changed.emit(BUS_UI, ui_volume)
+
+## 应用所有音量设置
 func _apply_volume_settings() -> void:
-	set_sfx_volume(sfx_volume)
-	set_music_volume(music_volume)
+	_apply_bus_volume(BUS_MASTER, master_volume)
+	_apply_bus_volume(BUS_MUSIC, music_volume)
+	_apply_bus_volume(BUS_SFX, sfx_volume)
+	_apply_bus_volume(BUS_UI, ui_volume)
 
-## 获取音效资源（占位符，等待真实音频文件）
-func _get_sfx_stream(type: SFXType) -> AudioStream:
-	# TODO: 加载真实音频文件
-	# 目前返回 null，Phase 6 会补充音频资源
-	match type:
-		SFXType.FOOTSTEP:
-			return _load_audio("res://audio/sfx/footstep.ogg")
-		SFXType.JUMP:
-			return _load_audio("res://audio/sfx/jump.ogg")
-		SFXType.LAND:
-			return _load_audio("res://audio/sfx/land.ogg")
-		SFXType.ATTACK_LIGHT:
-			return _load_audio("res://audio/sfx/attack_light.ogg")
-		SFXType.ATTACK_HEAVY:
-			return _load_audio("res://audio/sfx/attack_heavy.ogg")
-		SFXType.SKILL_CAST:
-			return _load_audio("res://audio/sfx/skill_cast.ogg")
-		SFXType.HIT_RECEIVED:
-			return _load_audio("res://audio/sfx/hit_received.ogg")
-		SFXType.DEATH:
-			return _load_audio("res://audio/sfx/death.ogg")
-		SFXType.UI_CLICK:
-			return _load_audio("res://audio/sfx/ui_click.ogg")
-		SFXType.UI_HOVER:
-			return _load_audio("res://audio/sfx/ui_hover.ogg")
+## 应用总线音量
+func _apply_bus_volume(bus_name: String, volume: float) -> void:
+	var bus_index = AudioServer.get_bus_index(bus_name)
+	if bus_index >= 0:
+		# 线性音量转换为分贝
+		var db = linear_to_db(volume) if volume > 0 else -80.0
+		AudioServer.set_bus_volume_db(bus_index, db)
+
+## 保存音量设置
+func _save_volume_setting(key: String, value: float) -> void:
+	var save_system = _get_save_system()
+	if save_system:
+		save_system.save_setting(key, value)
+
+## === 资源加载 ===
+
+## 加载音乐
+func _load_music(track_name: String) -> AudioStream:
+	# 检查缓存
+	if music_cache.has(track_name):
+		return music_cache[track_name]
+
+	# 加载资源
+	var path = "res://audio/music/%s.ogg" % track_name
+	if not ResourceLoader.exists(path):
+		# 尝试 mp3
+		path = "res://audio/music/%s.mp3" % track_name
+
+	if ResourceLoader.exists(path):
+		var stream = load(path)
+		music_cache[track_name] = stream
+		return stream
+
 	return null
 
-## 获取音乐资源（占位符）
-func _get_music_stream(type: MusicType) -> AudioStream:
-	# TODO: 加载真实音乐文件
-	match type:
-		MusicType.MENU:
-			return _load_audio("res://audio/music/menu.ogg")
-		MusicType.BATTLE:
-			return _load_audio("res://audio/music/battle.ogg")
-		MusicType.VICTORY:
-			return _load_audio("res://audio/music/victory.ogg")
-		MusicType.DEFEAT:
-			return _load_audio("res://audio/music/defeat.ogg")
+## 加载音效
+func _load_sfx(sfx_name: String) -> AudioStream:
+	# 检查缓存（包括程序化音效）
+	if sfx_cache.has(sfx_name):
+		return sfx_cache[sfx_name]
+
+	# 尝试从文件系统加载
+	var path = "res://audio/sfx/%s.wav" % sfx_name
+	if not ResourceLoader.exists(path):
+		# 尝试 ogg
+		path = "res://audio/sfx/%s.ogg" % sfx_name
+
+	if ResourceLoader.exists(path):
+		var stream = load(path)
+		sfx_cache[sfx_name] = stream
+		return stream
+
+	# 如果文件不存在，尝试生成程序化音效
+	if AudioSynthesizer.PRESETS.has(sfx_name):
+		var stream = AudioSynthesizer.generate_sound(sfx_name)
+		if stream:
+			sfx_cache[sfx_name] = stream
+			return stream
+
 	return null
 
-## 加载音频文件（带错误处理）
-func _load_audio(path: String) -> AudioStream:
-	if not FileAccess.file_exists(path):
-		push_warning("[AudioManager] Audio file not found: %s" % path)
-		return null
-	return load(path) as AudioStream
+## 预加载音效
+func preload_sfx(sfx_names: Array) -> void:
+	for sfx_name in sfx_names:
+		_load_sfx(sfx_name)
+
+	print("[AudioManager] Preloaded %d SFX" % sfx_names.size())
+
+## 预加载音乐
+func preload_music(track_names: Array) -> void:
+	for track_name in track_names:
+		_load_music(track_name)
+
+	print("[AudioManager] Preloaded %d music tracks" % track_names.size())
+
+## 清理缓存
+func clear_cache() -> void:
+	sfx_cache.clear()
+	music_cache.clear()
+	print("[AudioManager] Cache cleared")
+
+## === 便捷方法 ===
+
+## 播放常见游戏音效
+func play_powerup_collect() -> void:
+	play_sfx("powerup_collect", 0.0, randf_range(0.9, 1.1))
+
+func play_obstacle_hit() -> void:
+	play_sfx("obstacle_hit", 0.0, randf_range(0.95, 1.05))
+
+func play_button_click() -> void:
+	play_ui_sfx("button_click")
+
+func play_button_hover() -> void:
+	play_ui_sfx("button_hover")
+
+func play_level_complete() -> void:
+	play_sfx("level_complete")
+
+func play_level_failed() -> void:
+	play_sfx("level_failed")
+
+func play_countdown() -> void:
+	play_sfx("countdown")
+
+func play_go() -> void:
+	play_sfx("go")
+
+## === 查询接口 ===
+
+## 音乐是否正在播放
+func is_music_playing() -> bool:
+	return music_player.playing
+
+## 获取当前音乐
+func get_current_music() -> String:
+	return current_music_track
+
+## 获取主音量
+func get_master_volume() -> float:
+	return master_volume
+
+## 获取音乐音量
+func get_music_volume() -> float:
+	return music_volume
+
+## 获取音效音量
+func get_sfx_volume() -> float:
+	return sfx_volume
+
+## 获取UI音量
+func get_ui_volume() -> float:
+	return ui_volume

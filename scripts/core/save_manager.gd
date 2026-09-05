@@ -1,220 +1,426 @@
 extends Node
 class_name SaveManager
-## 统一存档管理器 - 管理所有系统的存档和加载
+## 保存管理器
+## 管理游戏进度保存和加载
 
-signal save_completed(slot_index)
-signal load_completed(slot_index)
-signal save_failed(slot_index, error)
-signal load_failed(slot_index, error)
+## 信号
+signal save_completed(slot_id: int)
+signal load_completed(slot_id: int)
+signal save_failed(slot_id: int, error: String)
+signal load_failed(slot_id: int, error: String)
 
+## 保存配置
 const SAVE_DIR = "user://saves/"
 const SAVE_FILE_PREFIX = "save_"
-const SAVE_FILE_EXT = ".json"
-const MAX_SAVE_SLOTS = 10
+const SAVE_FILE_EXTENSION = ".dat"
+const MAX_SAVE_SLOTS = 3
+const SAVE_VERSION = 1
 
-var registered_systems = {}  # system_name -> system_node
+## 当前存档槽
+var current_slot: int = -1
+
+## 存档数据缓存
+var save_data_cache: Dictionary = {}
+
+## GameConfig引用（可选，用于直接访问）
+var game_config_override: Node = null
 
 func _ready() -> void:
+	print("[SaveManager] Initializing...")
+
+	# 确保保存目录存在
 	_ensure_save_directory()
+
+	# 扫描现有存档
+	_scan_saves()
+
 	print("[SaveManager] Initialized")
 
-## 确保存档目录存在
+## 确保保存目录存在
 func _ensure_save_directory() -> void:
-	if not DirAccess.dir_exists_absolute(SAVE_DIR):
-		DirAccess.make_dir_absolute(SAVE_DIR)
+	var dir = DirAccess.open("user://")
+	if dir:
+		if not dir.dir_exists("saves"):
+			dir.make_dir("saves")
+			print("[SaveManager] Created save directory")
 
-## 注册需要存档的系统
-func register_system(system_name: String, system_node: Node) -> void:
-	if not system_node.has_method("get_save_data") or not system_node.has_method("load_save_data"):
-		push_error("[SaveManager] System '%s' missing save methods" % system_name)
-		return
+## 扫描现有存档
+func _scan_saves() -> void:
+	save_data_cache.clear()
 
-	registered_systems[system_name] = system_node
-	print("[SaveManager] Registered system: %s" % system_name)
+	for slot_id in range(MAX_SAVE_SLOTS):
+		var save_path = _get_save_path(slot_id)
+		if FileAccess.file_exists(save_path):
+			var metadata = _load_save_metadata(slot_id)
+			if metadata:
+				save_data_cache[slot_id] = metadata
+				print("[SaveManager] Found save in slot %d" % slot_id)
 
-## 注销系统
-func unregister_system(system_name: String) -> void:
-	registered_systems.erase(system_name)
-
-## 保存游戏到指定槽位
-func save_game(slot_index: int) -> bool:
-	if slot_index < 0 or slot_index >= MAX_SAVE_SLOTS:
-		push_error("[SaveManager] Invalid slot index: %d" % slot_index)
-		save_failed.emit(slot_index, "Invalid slot")
+## 保存游戏
+func save_game(slot_id: int) -> bool:
+	if slot_id < 0 or slot_id >= MAX_SAVE_SLOTS:
+		push_error("[SaveManager] Invalid slot ID: %d" % slot_id)
+		save_failed.emit(slot_id, "Invalid slot ID")
 		return false
 
-	var save_data = {
-		"version": "1.0.0",
+	print("[SaveManager] Saving game to slot %d..." % slot_id)
+
+	# 收集保存数据
+	var save_data = _collect_save_data()
+
+	# 添加元数据
+	save_data["metadata"] = {
+		"version": SAVE_VERSION,
+		"slot_id": slot_id,
 		"timestamp": Time.get_unix_time_from_system(),
-		"systems": {}
+		"play_time": _get_total_play_time(),
+		"level_progress": _get_level_progress()
 	}
 
-	# 收集所有系统的存档数据
-	for system_name in registered_systems.keys():
-		var system = registered_systems[system_name]
-		if system and is_instance_valid(system):
-			save_data["systems"][system_name] = system.get_save_data()
-
 	# 写入文件
-	var file_path = _get_save_file_path(slot_index)
-	var file = FileAccess.open(file_path, FileAccess.WRITE)
+	var save_path = _get_save_path(slot_id)
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
 
 	if not file:
-		push_error("[SaveManager] Failed to open file for writing: %s" % file_path)
-		save_failed.emit(slot_index, "File write error")
+		push_error("[SaveManager] Failed to open save file: %s" % save_path)
+		save_failed.emit(slot_id, "Failed to open file")
 		return false
 
+	# 转换为JSON并写入
 	var json_string = JSON.stringify(save_data, "\t")
 	file.store_string(json_string)
 	file.close()
 
-	print("[SaveManager] Game saved to slot %d (%d systems)" % [slot_index, registered_systems.size()])
-	save_completed.emit(slot_index)
+	# 更新缓存
+	save_data_cache[slot_id] = save_data["metadata"]
+
+	# 设置当前槽
+	current_slot = slot_id
+
+	print("[SaveManager] Save completed to slot %d" % slot_id)
+	save_completed.emit(slot_id)
 
 	return true
 
-## 从指定槽位加载游戏
-func load_game(slot_index: int) -> bool:
-	if slot_index < 0 or slot_index >= MAX_SAVE_SLOTS:
-		push_error("[SaveManager] Invalid slot index: %d" % slot_index)
-		load_failed.emit(slot_index, "Invalid slot")
+## 加载游戏
+func load_game(slot_id: int) -> bool:
+	if slot_id < 0 or slot_id >= MAX_SAVE_SLOTS:
+		push_error("[SaveManager] Invalid slot ID: %d" % slot_id)
+		load_failed.emit(slot_id, "Invalid slot ID")
 		return false
 
-	var file_path = _get_save_file_path(slot_index)
+	var save_path = _get_save_path(slot_id)
 
-	if not FileAccess.file_exists(file_path):
-		push_error("[SaveManager] Save file not found: %s" % file_path)
-		load_failed.emit(slot_index, "File not found")
+	if not FileAccess.file_exists(save_path):
+		push_error("[SaveManager] Save file not found: %s" % save_path)
+		load_failed.emit(slot_id, "Save file not found")
 		return false
 
-	var file = FileAccess.open(file_path, FileAccess.READ)
+	print("[SaveManager] Loading game from slot %d..." % slot_id)
+
+	# 读取文件
+	var file = FileAccess.open(save_path, FileAccess.READ)
+
 	if not file:
-		push_error("[SaveManager] Failed to open file for reading: %s" % file_path)
-		load_failed.emit(slot_index, "File read error")
+		push_error("[SaveManager] Failed to open save file: %s" % save_path)
+		load_failed.emit(slot_id, "Failed to open file")
 		return false
 
-	var json_text = file.get_as_text()
+	var json_string = file.get_as_text()
 	file.close()
 
+	# 解析JSON
 	var json = JSON.new()
-	var error = json.parse(json_text)
+	var parse_result = json.parse(json_string)
 
-	if error != OK:
-		push_error("[SaveManager] JSON parse error: %s" % json.get_error_message())
-		load_failed.emit(slot_index, "Parse error")
+	if parse_result != OK:
+		push_error("[SaveManager] Failed to parse save file")
+		load_failed.emit(slot_id, "Failed to parse save data")
 		return false
 
 	var save_data = json.data
 
-	if not save_data is Dictionary or not save_data.has("systems"):
-		push_error("[SaveManager] Invalid save data format")
-		load_failed.emit(slot_index, "Invalid format")
+	# 验证版本
+	if not save_data.has("metadata"):
+		push_error("[SaveManager] Invalid save data: missing metadata")
+		load_failed.emit(slot_id, "Invalid save data")
 		return false
 
-	# 加载所有系统的数据
-	var systems_data = save_data["systems"]
-	for system_name in registered_systems.keys():
-		var system = registered_systems[system_name]
-		if system and is_instance_valid(system) and systems_data.has(system_name):
-			system.load_save_data(systems_data[system_name])
+	var metadata = save_data["metadata"]
+	if metadata.get("version", 0) != SAVE_VERSION:
+		push_warning("[SaveManager] Save version mismatch: %d vs %d" % [metadata.get("version"), SAVE_VERSION])
+		# 继续加载，但可能需要迁移
 
-	print("[SaveManager] Game loaded from slot %d" % slot_index)
-	load_completed.emit(slot_index)
+	# 应用保存数据
+	_apply_save_data(save_data)
+
+	# 设置当前槽
+	current_slot = slot_id
+
+	print("[SaveManager] Load completed from slot %d" % slot_id)
+	load_completed.emit(slot_id)
 
 	return true
 
-## 删除存档槽位
-func delete_save(slot_index: int) -> bool:
-	if slot_index < 0 or slot_index >= MAX_SAVE_SLOTS:
+## 删除存档
+func delete_save(slot_id: int) -> bool:
+	if slot_id < 0 or slot_id >= MAX_SAVE_SLOTS:
+		push_error("[SaveManager] Invalid slot ID: %d" % slot_id)
 		return false
 
-	var file_path = _get_save_file_path(slot_index)
+	var save_path = _get_save_path(slot_id)
 
-	if not FileAccess.file_exists(file_path):
+	if not FileAccess.file_exists(save_path):
+		print("[SaveManager] Save file not found, nothing to delete")
+		return true
+
+	# 删除文件
+	var dir = DirAccess.open("user://saves/")
+	if dir:
+		var error = dir.remove(_get_save_filename(slot_id))
+		if error == OK:
+			print("[SaveManager] Deleted save in slot %d" % slot_id)
+			save_data_cache.erase(slot_id)
+
+			if current_slot == slot_id:
+				current_slot = -1
+
+			return true
+		else:
+			push_error("[SaveManager] Failed to delete save file: %d" % error)
+			return false
+
+	return false
+
+## 获取存档元数据
+func get_save_metadata(slot_id: int) -> Dictionary:
+	if save_data_cache.has(slot_id):
+		return save_data_cache[slot_id]
+
+	return {}
+
+## 检查存档是否存在
+func has_save(slot_id: int) -> bool:
+	return save_data_cache.has(slot_id)
+
+## 获取所有存档信息
+func get_all_saves_info() -> Array[Dictionary]:
+	var saves: Array[Dictionary] = []
+
+	for slot_id in range(MAX_SAVE_SLOTS):
+		var info: Dictionary = {
+			"slot_id": slot_id,
+			"exists": has_save(slot_id),
+			"metadata": get_save_metadata(slot_id)
+		}
+		saves.append(info)
+
+	return saves
+
+## 自动保存
+func auto_save() -> bool:
+	if current_slot >= 0:
+		print("[SaveManager] Auto-saving to slot %d..." % current_slot)
+		return save_game(current_slot)
+	else:
+		print("[SaveManager] No current slot for auto-save")
 		return false
 
-	DirAccess.remove_absolute(file_path)
-	print("[SaveManager] Deleted save slot %d" % slot_index)
+## 收集保存数据
+func _collect_save_data() -> Dictionary:
+	var data: Dictionary = {}
 
-	return true
+	# 玩家进度
+	data["player"] = _collect_player_data()
 
-## 检查槽位是否有存档
-func has_save(slot_index: int) -> bool:
-	if slot_index < 0 or slot_index >= MAX_SAVE_SLOTS:
-		return false
+	# 关卡进度
+	data["levels"] = _collect_level_data()
 
-	return FileAccess.file_exists(_get_save_file_path(slot_index))
+	# 游戏统计
+	data["statistics"] = _collect_statistics_data()
 
-## 获取存档信息
-func get_save_info(slot_index: int) -> Dictionary:
-	if not has_save(slot_index):
-		return {}
+	# 游戏设置
+	data["settings"] = _collect_settings_data()
 
-	var file_path = _get_save_file_path(slot_index)
-	var file = FileAccess.open(file_path, FileAccess.READ)
+	return data
 
-	if not file:
-		return {}
-
-	var json_text = file.get_as_text()
-	file.close()
-
-	var json = JSON.new()
-	var error = json.parse(json_text)
-
-	if error != OK:
-		return {}
-
-	var save_data = json.data
-
-	if not save_data is Dictionary:
-		return {}
-
+## 收集玩家数据
+func _collect_player_data() -> Dictionary:
+	# TODO: 从实际玩家系统收集数据
 	return {
-		"slot_index": slot_index,
-		"timestamp": save_data.get("timestamp", 0),
-		"version": save_data.get("version", "unknown"),
-		"date": _format_timestamp(save_data.get("timestamp", 0))
+		"level": 1,
+		"experience": 0,
+		"health": 100.0,
+		"max_health": 100.0
 	}
 
-## 获取所有存档槽位信息
-func get_all_save_slots() -> Array:
-	var slots = []
+## 收集关卡数据
+func _collect_level_data() -> Dictionary:
+	var game_config = _get_game_config()
+	if not game_config:
+		return {}
 
-	for i in range(MAX_SAVE_SLOTS):
-		if has_save(i):
-			slots.append(get_save_info(i))
-		else:
-			slots.append({
-				"slot_index": i,
-				"empty": true
-			})
+	var levels_data: Dictionary = {}
+	var level_count = game_config.get_level_count()
 
-	return slots
+	for i in range(level_count):
+		levels_data[str(i)] = {
+			"unlocked": game_config.is_level_unlocked(i),
+			"completed": false,  # TODO: 从实际系统获取
+			"best_time": 0.0,
+			"best_score": 0
+		}
 
-## 快速存档（槽位0）
-func quick_save() -> bool:
-	return save_game(0)
+	return levels_data
 
-## 快速加载（槽位0）
-func quick_load() -> bool:
-	return load_game(0)
+## 收集统计数据
+func _collect_statistics_data() -> Dictionary:
+	var game_state_manager = _get_game_state_manager()
+	if not game_state_manager:
+		return {}
 
-## 自动存档
-func auto_save() -> bool:
-	return save_game(MAX_SAVE_SLOTS - 1)
+	return game_state_manager.get_session_stats()
 
-## 获取存档文件路径
-func _get_save_file_path(slot_index: int) -> String:
-	return SAVE_DIR + SAVE_FILE_PREFIX + str(slot_index) + SAVE_FILE_EXT
+## 收集设置数据
+func _collect_settings_data() -> Dictionary:
+	# TODO: 从实际设置系统收集
+	return {
+		"master_volume": 1.0,
+		"music_volume": 0.8,
+		"sfx_volume": 1.0,
+		"difficulty": "normal"
+	}
 
-## 格式化时间戳
-func _format_timestamp(timestamp: int) -> String:
-	var datetime = Time.get_datetime_dict_from_unix_time(timestamp)
-	return "%04d-%02d-%02d %02d:%02d" % [
-		datetime.year,
-		datetime.month,
-		datetime.day,
-		datetime.hour,
-		datetime.minute
-	]
+## 应用保存数据
+func _apply_save_data(save_data: Dictionary) -> void:
+	# 应用玩家数据
+	if save_data.has("player"):
+		_apply_player_data(save_data["player"])
+
+	# 应用关卡进度
+	if save_data.has("levels"):
+		_apply_level_data(save_data["levels"])
+
+	# 应用统计数据
+	if save_data.has("statistics"):
+		_apply_statistics_data(save_data["statistics"])
+
+	# 应用设置数据
+	if save_data.has("settings"):
+		_apply_settings_data(save_data["settings"])
+
+## 应用玩家数据
+func _apply_player_data(player_data: Dictionary) -> void:
+	# TODO: 应用到实际玩家系统
+	print("[SaveManager] Applied player data: level %d" % player_data.get("level", 1))
+
+## 应用关卡数据
+func _apply_level_data(levels_data: Dictionary) -> void:
+	var game_config = _get_game_config()
+	if not game_config:
+		print("[SaveManager] GameConfig not found, cannot apply level data")
+		return
+
+	# 等待GameConfig初始化完成
+	if not game_config.is_node_ready():
+		await game_config.ready
+
+	# 解锁关卡
+	var unlocked_count = 0
+	for level_id_str in levels_data:
+		var level_id = int(level_id_str)
+		var level_data = levels_data[level_id_str]
+
+		if level_data.get("unlocked", false):
+			game_config.unlock_level(level_id)
+			unlocked_count += 1
+
+	print("[SaveManager] Applied level data: %d levels unlocked" % unlocked_count)
+
+## 应用统计数据
+func _apply_statistics_data(stats_data: Dictionary) -> void:
+	# TODO: 应用到游戏状态管理器
+	print("[SaveManager] Applied statistics data")
+
+## 应用设置数据
+func _apply_settings_data(settings_data: Dictionary) -> void:
+	# TODO: 应用到设置系统
+	print("[SaveManager] Applied settings data")
+
+## 加载存档元数据（不加载完整数据）
+func _load_save_metadata(slot_id: int) -> Dictionary:
+	var save_path = _get_save_path(slot_id)
+
+	if not FileAccess.file_exists(save_path):
+		return {}
+
+	var file = FileAccess.open(save_path, FileAccess.READ)
+	if not file:
+		return {}
+
+	var json_string = file.get_as_text()
+	file.close()
+
+	var json = JSON.new()
+	var parse_result = json.parse(json_string)
+
+	if parse_result != OK:
+		return {}
+
+	var save_data = json.data
+	return save_data.get("metadata", {})
+
+## 获取保存路径
+func _get_save_path(slot_id: int) -> String:
+	return SAVE_DIR + _get_save_filename(slot_id)
+
+## 获取保存文件名
+func _get_save_filename(slot_id: int) -> String:
+	return SAVE_FILE_PREFIX + str(slot_id) + SAVE_FILE_EXTENSION
+
+## 获取游戏配置
+func _get_game_config() -> Node:
+	# 优先使用直接引用
+	if game_config_override and is_instance_valid(game_config_override):
+		return game_config_override
+
+	# 尝试从场景树查找
+	var root = get_tree().root
+	if root:
+		var config = root.find_child("GameConfig", true, false)
+		if config:
+			return config
+
+	# 尝试从父节点的兄弟节点查找
+	var parent = get_parent()
+	if parent:
+		for child in parent.get_children():
+			if child.name == "GameConfig":
+				return child
+
+	return null
+
+## 获取游戏状态管理器
+func _get_game_state_manager() -> Node:
+	if has_node("/root/GameStateManager"):
+		return get_node("/root/GameStateManager")
+	return null
+
+## 获取总游戏时间
+func _get_total_play_time() -> float:
+	var game_state_manager = _get_game_state_manager()
+	if game_state_manager:
+		var stats = game_state_manager.get_session_stats()
+		return stats.get("total_play_time", 0.0)
+	return 0.0
+
+## 获取关卡进度
+func _get_level_progress() -> String:
+	var game_config = _get_game_config()
+	if not game_config:
+		return "0/0"
+
+	var level_count = game_config.get_level_count()
+	var unlocked_count = game_config.get_unlocked_levels().size()
+
+	return "%d/%d" % [unlocked_count, level_count]

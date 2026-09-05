@@ -1,0 +1,227 @@
+{
+	"name": "新手训练场",
+	"id": "level_01_tutorial",
+	"difficulty": "tutorial",
+	"description": "欢迎来到Yolk Rush！在这里学习基础操作和游戏机制。",
+	"estimated_time": 300,
+	"objectives": [
+		{
+			"id": "complete_movement",
+			"type": "tutorial",
+			"description": "完成移动教学",
+			"target": 1
+		},
+		{
+			"id": "collect_coins",
+			"type": "collect",
+			"description": "收集10个金币",
+			"target": 10
+		},
+		{
+			"id": "defeat_enemies",
+			"type": "defeat",
+			"description": "击败3个训练假人",
+			"target": 3
+		},
+		{
+			"id": "reach_finish",
+			"type": "reach",
+			"description": "到达终点",
+			"target": 1
+		}
+	],
+	"rewards": {
+		"base_score": 1000,
+		"time_bonus": {
+			"gold_time": 240,
+			"silver_time": 300,
+			"bronze_time": 360
+		},
+		"completion_bonus": 500,
+		"perfect_bonus": 300
+	},
+	"spawn_point": {
+		"position": [0, 1, 0],
+		"rotation": [0, 0, 0]
+	},
+	"checkpoints": [
+		{
+			"id": "cp_start",
+			"position": [0, 1, 0],
+			"description": "起点"
+		},
+		{
+			"id": "cp_movement",
+			"position": [50, 1, 0],
+			"description": "移动教学完成"
+		},
+		{
+			"id": "cp_combat",
+			"position": [100, 1, 0],
+			"description": "战斗教学完成"
+		},
+		{
+			"id": "cp_finish",
+			"position": [150, 1, 0],
+			"description": "终点"
+		}
+	],
+	"tutorial_steps": [
+		{
+			"id": "welcome",
+			"trigger": "start",
+			"message": "欢迎来到Yolk Rush！让我们开始训练。",
+			"duration": 3.0
+		},
+		{
+			"id": "movement_wasd",
+			"trigger": "checkpoint:cp_start",
+			"message": "使用WASD键移动你的角色",
+			"wait_for": "player_moved",
+			"duration": 0
+		},
+		{
+			"id": "camera_mouse",
+			"trigger": "player_moved",
+			"message": "移动鼠标控制视角",
+			"wait_for": "camera_rotated",
+			"duration": 0
+		},
+		{
+			"id": "jump_space",
+			"trigger": "camera_rotated",
+			"message": "按空格键跳跃",
+			"wait_for": "player_jumped",
+			"duration": 0
+		},
+		{
+			"id": "dash_shift",
+			"trigger": "player_jumped",
+			"message": "按住Shift键冲刺",
+			"wait_for": "player_dashed",
+			"duration": 0
+		},
+		{
+			"id": "collect_items",
+			"trigger": "checkpoint:cp_movement",
+			"message": "收集金币获得分数！",
+			"duration": 3.0
+		},
+		{
+			"id": "combat_attack",
+			"trigger": "checkpoint:cp_combat",
+			"message": "点击鼠标左键攻击敌人",
+			"wait_for": "player_attacked",
+			"duration": 0
+		},
+		{
+			"id": "combat_skill",
+			"trigger": "player_attacked",
+			"message": "按E键使用技能",
+			"wait_for": "player_used_skill",
+			"duration": 0
+		},
+		{
+			"id": "complete",
+			"trigger": "checkpoint:cp_finish",
+			"message": "太棒了！你已经掌握了基础操作！",
+			"duration": 3.0
+		}
+	],
+	"enemies": [
+		{
+			"type": "training_dummy",
+			"position": [80, 1, -5],
+			"patrol": false,
+			"aggro_range": 5.0
+		},
+		{
+			"type": "training_dummy",
+			"position": [85, 1, 0],
+			"patrol": false,
+			"aggro_range": 5.0
+		},
+		{
+			"type": "training_dummy",
+			"position": [80, 1, 5],
+			"patrol": false,
+			"aggro_range": 5.0
+		}
+	],
+	"items": [
+		{
+			"type": "coin",
+			"position": [20, 1.5, 0]
+		},
+		{
+			"type": "coin",
+			"position": [25, 1.5, 0]
+		},
+		{
+			"type": "coin",
+			"position": [30, 1.5, 0]
+		},
+		{
+			"type": "coin",
+			"position": [35, 1.5, 0]
+		},
+		{
+			"type": "coin",
+			"position": [40, 1.5, 0]
+		},
+		{
+			"type": "coin",
+			"position": [60, 1.5, -5]
+		},
+		{
+			"type": "coin",
+			"position": [60, 1.5, 0]
+		},
+		{
+			"type": "coin",
+			"position": [60, 1.5, 5]
+		},
+		{
+			"type": "coin",
+			"position": [120, 1.5, 0]
+		},
+		{
+			"type": "coin",
+			"position": [130, 1.5, 0]
+		},
+		{
+			"type": "health_pack",
+			"position": [70, 1.5, 0]
+		},
+		{
+			"type": "speed_boost",
+			"position": [110, 1.5, 0]
+		}
+	],
+	"obstacles": [
+		{
+			"type": "moving_platform",
+			"position": [45, 0, 0],
+			"pattern": "horizontal",
+			"speed": 2.0,
+			"distance": 5.0
+		},
+		{
+			"type": "rotating_blade",
+			"position": [55, 2, 0],
+			"rotation_speed": 90.0
+		},
+		{
+			"type": "spike_trap",
+			"position": [95, 0, 0],
+			"active_time": 2.0,
+			"inactive_time": 2.0
+		}
+	],
+	"environment": {
+		"lighting": "daytime",
+		"weather": "clear",
+		"ambient_particles": "dust",
+		"skybox": "training_grounds"
+	}
+}
