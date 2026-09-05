@@ -10,14 +10,32 @@ const MATCH_SCENE := "res://scenes/match/match.tscn"
 func _ready() -> void:
 	print("[App] Yolk Rush 4.7.2 factory boot")
 
-func load_default_character() -> CharacterDefinition:
-	return CharacterDefinition.load_from_path(CHAR_PATH)
+func load_default_character():
+	var script = load("res://scripts/character/character_definition.gd")
+	if script == null:
+		return null
+	var obj = script.new()
+	if obj and obj.has_method("load_from_path"):
+		return obj.load_from_path(CHAR_PATH)
+	return null
 
-func load_default_level() -> LevelDefinition:
-	return LevelDefinition.load_from_path(LEVEL_PATH)
+func load_default_level():
+	var script = load("res://scripts/level/level_definition.gd")
+	if script == null:
+		return null
+	var obj = script.new()
+	if obj and obj.has_method("load_from_path"):
+		return obj.load_from_path(LEVEL_PATH)
+	return null
 
-func load_default_lighting() -> LightingProfile:
-	return LightingProfile.load_from_path(LIGHT_PATH)
+func load_default_lighting():
+	var script = load("res://scripts/core/lighting_profile.gd")
+	if script == null:
+		return null
+	var obj = script.new()
+	if obj and obj.has_method("load_from_path"):
+		return obj.load_from_path(LIGHT_PATH)
+	return null
 
 func go_hero_studio() -> void:
 	get_tree().change_scene_to_file(STUDIO_SCENE)

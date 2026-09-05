@@ -2,8 +2,8 @@ extends Node3D
 ## 关卡1 - 草原初章
 ## 启动脚本，负责初始化关卡
 
-@onready var level_generator: LevelGenerator = $LevelGenerator
-@onready var level_flow: LevelFlowController = $LevelFlowController
+@onready var level_generator: Node = $LevelGenerator
+@onready var level_flow: Node = $LevelFlowController
 @onready var spawn_point: Marker3D = $SpawnPoint
 
 ## 玩家场景

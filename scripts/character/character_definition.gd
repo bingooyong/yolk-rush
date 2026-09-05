@@ -2,6 +2,8 @@ class_name CharacterDefinition
 extends RefCounted
 ## Data-driven character entry. Collision authority is collision_profile, never mesh.
 
+const JsonData = preload("res://scripts/core/json_data.gd")
+
 const HEIGHT_MIN := 1.40
 const HEIGHT_MAX := 1.70
 const REQUIRED_ANIM_KEYS: PackedStringArray = [

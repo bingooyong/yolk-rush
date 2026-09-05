@@ -2,6 +2,8 @@ class_name LevelDefinition
 extends RefCounted
 ## Level DSL from data/levels/*.json. Scene must not own these rules.
 
+const JsonData = preload("res://scripts/core/json_data.gd")
+
 const ALLOWED_ROLES: PackedStringArray = [
 	"start_hall",
 	"main_lane",

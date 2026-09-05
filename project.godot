@@ -13,7 +13,7 @@ config_version=5
 config/name="Yolk Rush"
 config/description="AI-native 3D party obstacle race. iOS first."
 config/version="0.1.0"
-run/main_scene="res://scenes/bootstrap/boot.tscn"
+run/main_scene="res://scenes/levels/level_01_grassland.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 
 [autoload]

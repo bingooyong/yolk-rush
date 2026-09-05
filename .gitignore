@@ -2,3 +2,6 @@
 export/
 *.translation
 .DS_Store
+export/
+*.ios.template_debug.*.o
+ios/

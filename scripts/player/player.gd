@@ -1,6 +1,8 @@
 extends CharacterBody3D
 ## 玩家控制器 - 集成所有游戏系统
 
+const CombatSystemScript = preload("res://scripts/systems/combat_system.gd")
+
 const SPEED = 5.0
 const JUMP_VELOCITY = 4.5
 const MOUSE_SENSITIVITY = 0.002
@@ -32,9 +34,11 @@ func _ready() -> void:
 	# 捕获鼠标
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
-	# 设置玩家引用到系统
-	if GameManager and GameManager.level_system:
-		GameManager.level_system.set_player(self)
+	# 设置玩家引用到系统（如果GameManager存在）
+	if Engine.has_singleton("GameManager") or get_node_or_null("/root/GameManager"):
+		var gm = get_node("/root/GameManager")
+		if gm and gm.level_system:
+			gm.level_system.set_player(self)
 
 	# 更新最大生命值
 	_update_stats()
@@ -94,7 +98,7 @@ func _perform_attack() -> void:
 	print("[Player] Attack! Damage: %d" % attack_damage)
 
 	# 使用战斗系统执行近战攻击
-	var hit_targets = CombatSystem.perform_melee_attack(self, attack_damage, attack_range, attack_angle)
+	var hit_targets = CombatSystemScript.perform_melee_attack(self, attack_damage, attack_range, attack_angle)
 
 	if hit_targets.size() > 0:
 		print("[Player] Hit %d enemies" % hit_targets.size())
@@ -138,11 +142,18 @@ func _respawn() -> void:
 
 ## 更新属性
 func _update_stats() -> void:
-	if not GameManager:
-		max_health = 100.0
+	max_health = 100.0
+
+	var gm = get_node_or_null("/root/GameManager")
+	if not gm:
 		return
 
-	var stats = GameManager.get_total_player_stats()
+	if not gm.has_method("get_total_player_stats"):
+		return
+
+	var stats = gm.get_total_player_stats()
+	if stats == null:
+		stats = {}
 
 	# 更新最大生命值
 	var base_health = 100.0
@@ -171,7 +182,10 @@ func _on_level_up(new_level: int) -> void:
 
 ## 使用物品
 func use_item(item_id: String) -> void:
-	var item = GameManager.item_database.get_item_by_id(item_id)
+	var gm = get_node_or_null("/root/GameManager")
+	if not gm or not gm.item_database:
+		return
+	var item = gm.item_database.get_item_by_id(item_id)
 	if not item:
 		return
 

@@ -2,6 +2,8 @@ class_name LightingProfile
 extends RefCounted
 ## Presentation lighting numbers from data/contracts/lighting_profile.json.
 
+const JsonData = preload("res://scripts/core/json_data.gd")
+
 var path: String = ""
 var id: String = ""
 var key: Dictionary = {}
