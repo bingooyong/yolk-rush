@@ -15,6 +15,8 @@ static func apply_effect(effect: Dictionary, skill, caster: Node, target: Node) 
 			_apply_buff(effect, skill, caster, target)
 		"debuff":
 			_apply_debuff(effect, skill, caster, target)
+		"status_effect":
+			_apply_status_effect(effect, skill, caster, target)
 		"teleport":
 			_apply_teleport(effect, skill, caster, target)
 		_:
@@ -86,35 +88,59 @@ static func _apply_heal(effect: Dictionary, skill, caster: Node, target: Node) -
 		var target_name = _get_entity_name(target)
 		combat_ui.log_heal(caster_name, target_name, heal_amount)
 
-## 应用增益效果
+## 应用增益效果（兼容旧接口）
 static func _apply_buff(effect: Dictionary, skill, caster: Node, target: Node) -> void:
 	if target == null:
 		return
 
-	# 获取状态效果系统（Phase 11 实现）
-	# 这里先预留接口
 	var buff_type = effect.get("buff_type", "")
-	var duration = effect.get("duration", 0.0)
+	if buff_type.is_empty():
+		return
 
-	print("[SkillEffect] Apply buff: %s for %.1fs (not implemented yet)" % [buff_type, duration])
+	# 转换为status_effect调用
+	var status_effect = {
+		"effect_id": buff_type,
+		"chance": effect.get("chance", 1.0)
+	}
+	_apply_status_effect(status_effect, skill, caster, target)
 
-	# TODO: Phase 11 - 集成状态效果系统
-	# if target.has_method("add_buff"):
-	#     target.add_buff(buff_type, duration, effect)
-
-## 应用减益效果
+## 应用减益效果（兼容旧接口）
 static func _apply_debuff(effect: Dictionary, skill, caster: Node, target: Node) -> void:
 	if target == null:
 		return
 
 	var debuff_type = effect.get("debuff_type", "")
-	var duration = effect.get("duration", 0.0)
+	if debuff_type.is_empty():
+		return
 
-	print("[SkillEffect] Apply debuff: %s for %.1fs (not implemented yet)" % [debuff_type, duration])
+	# 转换为status_effect调用
+	var status_effect = {
+		"effect_id": debuff_type,
+		"chance": effect.get("chance", 1.0)
+	}
+	_apply_status_effect(status_effect, skill, caster, target)
 
-	# TODO: Phase 11 - 集成状态效果系统
-	# if target.has_method("add_debuff"):
-	#     target.add_debuff(debuff_type, duration, effect)
+## 应用状态效果（新接口）
+static func _apply_status_effect(effect: Dictionary, skill, caster: Node, target: Node) -> void:
+	if target == null:
+		return
+
+	var effect_id = effect.get("effect_id", "")
+	if effect_id.is_empty():
+		return
+
+	var chance = effect.get("chance", 1.0)
+
+	# 概率判定
+	if randf() > chance:
+		return
+
+	# 获取状态效果系统
+	var status_system = _get_status_effect_system()
+	if status_system:
+		status_system.apply_effect(effect_id, caster, target)
+	else:
+		push_warning("[SkillEffect] StatusEffectSystem not found")
 
 ## 应用传送效果
 static func _apply_teleport(effect: Dictionary, skill, caster: Node, target: Node) -> void:
@@ -162,6 +188,31 @@ static func _get_crit_multiplier(caster: Node) -> float:
 			multiplier = stats.get_crit_multiplier()
 
 	return multiplier
+
+## 获取状态效果系统
+static func _get_status_effect_system() -> Node:
+	# 从GameManager获取
+	if Engine.has_singleton("GameManager"):
+		var game_manager = Engine.get_singleton("GameManager")
+		if game_manager and game_manager.has_method("get_status_effect_system"):
+			return game_manager.get_status_effect_system()
+
+	# 从场景树获取
+	var tree = Engine.get_main_loop() as SceneTree
+	if tree:
+		var root = tree.root
+		if root:
+			var status_system = root.find_child("StatusEffectSystem", true, false)
+			if status_system:
+				return status_system
+
+	# 从GameManager autoload获取
+	if Engine.has_singleton("GameManager"):
+		var gm = Engine.get_singleton("GameManager")
+		if gm.has_node("StatusEffectSystem"):
+			return gm.get_node("StatusEffectSystem")
+
+	return null
 
 ## 获取战斗UI
 static func _get_combat_ui() -> Node:

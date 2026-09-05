@@ -19,6 +19,8 @@ const DropSystemClass = preload("res://scripts/drop/drop_system.gd")
 const DropDatabaseClass = preload("res://scripts/drop/drop_database.gd")
 const SaveManagerClass = preload("res://scripts/core/save_manager.gd")
 const SkillSystemClass = preload("res://scripts/skill/skill_system.gd")
+const StatusEffectSystemClass = preload("res://scripts/status/status_effect_system.gd")
+const StatusEffectDatabaseClass = preload("res://scripts/status/status_effect_database.gd")
 
 signal game_initialized()
 signal systems_ready()
@@ -35,6 +37,7 @@ var shop_system
 var drop_system
 var save_manager
 var skill_system
+var status_effect_system
 
 # 数据库引用
 var equipment_database
@@ -43,6 +46,7 @@ var skill_database
 var achievement_database
 var shop_database
 var drop_database
+var status_effect_database
 
 var is_initialized = false
 
@@ -78,6 +82,9 @@ func _initialize_databases() -> void:
 
 	drop_database = DropDatabaseClass.new()
 	add_child(drop_database)
+
+	status_effect_database = StatusEffectDatabaseClass.new()
+	add_child(status_effect_database)
 
 	print("[GameManager] Databases loaded")
 
@@ -136,6 +143,11 @@ func _initialize_systems() -> void:
 	# 技能系统
 	skill_system = SkillSystemClass.new()
 	add_child(skill_system)
+
+	# 状态效果系统
+	status_effect_system = StatusEffectSystemClass.new()
+	add_child(status_effect_system)
+	status_effect_system.set_database(status_effect_database)
 
 	print("[GameManager] Systems initialized")
 	systems_ready.emit()
@@ -279,3 +291,11 @@ func new_game() -> void:
 	shop_system.refresh_shop()
 
 	print("[GameManager] New game started")
+
+## 获取状态效果系统
+func get_status_effect_system():
+	return status_effect_system
+
+## 获取技能系统
+func get_skill_system():
+	return skill_system

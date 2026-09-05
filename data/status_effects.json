@@ -1,0 +1,140 @@
+{
+  "version": "1.0.0",
+  "status_effects": [
+    {
+      "effect_id": "poison",
+      "name": "中毒",
+      "description": "持续受到毒素伤害",
+      "effect_type": "debuff",
+      "duration": 5.0,
+      "tick_interval": 1.0,
+      "tick_effect": {
+        "type": "damage",
+        "base_value": 5.0
+      },
+      "max_stacks": 5,
+      "stack_behavior": "add_stack",
+      "can_refresh": true,
+      "dispellable": true,
+      "icon_path": "",
+      "visual_effect": "",
+      "stat_modifiers": []
+    },
+    {
+      "effect_id": "stun",
+      "name": "眩晕",
+      "description": "无法移动或攻击",
+      "effect_type": "debuff",
+      "duration": 2.0,
+      "tick_interval": 0.0,
+      "max_stacks": 1,
+      "stack_behavior": "refresh_time",
+      "can_refresh": true,
+      "dispellable": true,
+      "icon_path": "",
+      "visual_effect": "",
+      "stat_modifiers": []
+    },
+    {
+      "effect_id": "speed_boost",
+      "name": "加速",
+      "description": "移动速度大幅提升",
+      "effect_type": "buff",
+      "duration": 10.0,
+      "tick_interval": 0.0,
+      "max_stacks": 1,
+      "stack_behavior": "refresh_time",
+      "can_refresh": true,
+      "dispellable": true,
+      "icon_path": "",
+      "visual_effect": "",
+      "stat_modifiers": [
+        {
+          "stat": "speed",
+          "modifier_type": "multiply",
+          "value": 1.5
+        }
+      ]
+    },
+    {
+      "effect_id": "strength_boost",
+      "name": "力量增强",
+      "description": "攻击力提升",
+      "effect_type": "buff",
+      "duration": 15.0,
+      "tick_interval": 0.0,
+      "max_stacks": 3,
+      "stack_behavior": "add_stack",
+      "can_refresh": true,
+      "dispellable": true,
+      "icon_path": "",
+      "visual_effect": "",
+      "stat_modifiers": [
+        {
+          "stat": "attack",
+          "modifier_type": "add",
+          "value": 10.0
+        }
+      ]
+    },
+    {
+      "effect_id": "regeneration",
+      "name": "生命恢复",
+      "description": "持续恢复生命值",
+      "effect_type": "buff",
+      "duration": 10.0,
+      "tick_interval": 1.0,
+      "tick_effect": {
+        "type": "heal",
+        "base_value": 3.0
+      },
+      "max_stacks": 3,
+      "stack_behavior": "add_stack",
+      "can_refresh": true,
+      "dispellable": true,
+      "icon_path": "",
+      "visual_effect": "",
+      "stat_modifiers": []
+    },
+    {
+      "effect_id": "burn",
+      "name": "燃烧",
+      "description": "被火焰灼烧，持续受到伤害",
+      "effect_type": "debuff",
+      "duration": 6.0,
+      "tick_interval": 1.0,
+      "tick_effect": {
+        "type": "damage",
+        "base_value": 8.0
+      },
+      "max_stacks": 3,
+      "stack_behavior": "add_stack",
+      "can_refresh": true,
+      "dispellable": true,
+      "icon_path": "",
+      "visual_effect": "",
+      "stat_modifiers": []
+    },
+    {
+      "effect_id": "slow",
+      "name": "减速",
+      "description": "移动速度降低",
+      "effect_type": "debuff",
+      "duration": 5.0,
+      "tick_interval": 0.0,
+      "max_stacks": 1,
+      "stack_behavior": "refresh_time",
+      "can_refresh": true,
+      "dispellable": true,
+      "icon_path": "",
+      "visual_effect": "",
+      "stat_modifiers": [
+        {
+          "stat": "speed",
+          "modifier_type": "multiply",
+          "value": 0.5
+        }
+      ]
+    }
+  ]
+}
