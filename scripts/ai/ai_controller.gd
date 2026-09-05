@@ -1,256 +1,247 @@
 extends Node
 class_name AIController
-## AI控制器基类 - 所有AI行为的基础
+## AI控制器基类 - 管理AI实体的行为和决策
 
 signal state_changed(old_state: String, new_state: String)
 signal target_acquired(target: Node)
 signal target_lost()
+signal perception_updated()
 
-enum AIState {
-	IDLE,       # 空闲
-	PATROL,     # 巡逻
-	ALERT,      # 警戒
-	COMBAT,     # 战斗
-	FLEE,       # 逃跑
-	DEAD        # 死亡
+## AI状态枚举
+enum State {
+	IDLE,      # 待机
+	PATROL,    # 巡逻
+	CHASE,     # 追击
+	COMBAT,    # 战斗
+	FLEE,      # 逃跑
+	DEAD       # 死亡
 }
 
-## 配置
-@export var update_interval: float = 0.1  # AI更新间隔（秒）
-@export var perception_radius: float = 10.0  # 感知半径
-@export var attack_range: float = 2.0  # 攻击范围
-@export var flee_health_threshold: float = 0.2  # 逃跑血量阈值
+## 当前状态
+var current_state: State = State.IDLE
 
-## 状态
-var current_state: AIState = AIState.IDLE
+## 受控实体
+@export var controlled_entity: Node
+
+## 当前目标
 var current_target: Node = null
-var entity: Node = null  # 拥有此AI的实体
 
-## 黑板（存储AI状态数据）
-var blackboard: Dictionary = {}
+## 感知组件
+var perception: Node = null
 
-## 内部
+## 配置参数
+@export_group("AI配置")
+@export var update_interval: float = 0.1  # AI更新间隔
+@export var debug_mode: bool = false
+
+## 内部计时器
 var update_timer: float = 0.0
 
 func _ready() -> void:
-	# 获取父实体
-	entity = get_parent()
-	_initialize()
+	if not controlled_entity:
+		controlled_entity = get_parent()
 
-func _initialize() -> void:
-	# 子类重写此方法进行初始化
-	pass
+	# 创建感知组件
+	perception = _create_perception_component()
+	if perception:
+		add_child(perception)
+
+	print("[AIController] Initialized for: %s" % controlled_entity.name)
 
 func _process(delta: float) -> void:
 	update_timer += delta
 
 	if update_timer >= update_interval:
 		update_timer = 0.0
-		_update_ai(delta)
+		_update_ai()
 
-## AI更新逻辑（子类重写）
-func _update_ai(delta: float) -> void:
+## AI主更新循环
+func _update_ai() -> void:
+	# 更新感知
+	if perception and perception.has_method("update_perception"):
+		perception.update_perception()
+
+	# 根据当前状态执行行为
 	match current_state:
-		AIState.IDLE:
-			_state_idle(delta)
-		AIState.PATROL:
-			_state_patrol(delta)
-		AIState.ALERT:
-			_state_alert(delta)
-		AIState.COMBAT:
-			_state_combat(delta)
-		AIState.FLEE:
-			_state_flee(delta)
-		AIState.DEAD:
-			_state_dead(delta)
+		State.IDLE:
+			_process_idle_state()
+		State.PATROL:
+			_process_patrol_state()
+		State.CHASE:
+			_process_chase_state()
+		State.COMBAT:
+			_process_combat_state()
+		State.FLEE:
+			_process_flee_state()
+		State.DEAD:
+			_process_dead_state()
 
-## 状态处理方法（子类重写）
-func _state_idle(_delta: float) -> void:
+## 创建感知组件（子类可覆盖）
+func _create_perception_component() -> Node:
+	# 预加载 PerceptionComponent
+	var PerceptionScript = load("res://scripts/ai/perception_component.gd")
+	if PerceptionScript:
+		return PerceptionScript.new()
+	return null
+
+## 状态处理方法（子类应实现）
+func _process_idle_state() -> void:
+	# 待机状态：检测周围威胁
+	if perception and perception.has_method("get_nearest_threat"):
+		var threat = perception.get_nearest_threat()
+		if threat:
+			set_target(threat)
+			change_state(State.CHASE)
+
+func _process_patrol_state() -> void:
+	# 巡逻状态：沿路径移动
 	pass
 
-func _state_patrol(_delta: float) -> void:
-	pass
-
-func _state_alert(_delta: float) -> void:
-	pass
-
-func _state_combat(_delta: float) -> void:
-	pass
-
-func _state_flee(_delta: float) -> void:
-	pass
-
-func _state_dead(_delta: float) -> void:
-	pass
-
-## 切换状态
-func change_state(new_state: AIState) -> void:
-	if current_state == new_state:
+func _process_chase_state() -> void:
+	# 追击状态：接近目标
+	if not is_instance_valid(current_target):
+		change_state(State.IDLE)
 		return
 
-	var old_state = current_state
+	# 检查是否进入战斗范围
+	var distance = _get_distance_to_target()
+	if distance < _get_combat_range():
+		change_state(State.COMBAT)
+
+func _process_combat_state() -> void:
+	# 战斗状态：攻击目标
+	if not is_instance_valid(current_target):
+		change_state(State.IDLE)
+		return
+
+	# 检查是否脱离战斗范围
+	var distance = _get_distance_to_target()
+	if distance > _get_combat_range() * 1.5:
+		change_state(State.CHASE)
+
+func _process_flee_state() -> void:
+	# 逃跑状态：远离威胁
+	pass
+
+func _process_dead_state() -> void:
+	# 死亡状态：停止所有行为
+	pass
+
+## 改变状态
+func change_state(new_state: State) -> void:
+	if new_state == current_state:
+		return
+
+	var old_state_name = State.keys()[current_state]
+	var new_state_name = State.keys()[new_state]
+
+	# 退出旧状态
 	_exit_state(current_state)
+
+	# 切换状态
+	var old_state = current_state
 	current_state = new_state
+
+	# 进入新状态
 	_enter_state(new_state)
 
-	state_changed.emit(AIState.keys()[old_state], AIState.keys()[new_state])
+	if debug_mode:
+		print("[AIController] %s: %s → %s" % [controlled_entity.name, old_state_name, new_state_name])
 
-## 进入状态（子类可重写）
-func _enter_state(state: AIState) -> void:
+	state_changed.emit(old_state_name, new_state_name)
+
+## 进入状态（子类可覆盖）
+func _enter_state(state: State) -> void:
 	match state:
-		AIState.IDLE:
-			_enter_idle()
-		AIState.PATROL:
-			_enter_patrol()
-		AIState.ALERT:
-			_enter_alert()
-		AIState.COMBAT:
-			_enter_combat()
-		AIState.FLEE:
-			_enter_flee()
-		AIState.DEAD:
-			_enter_dead()
+		State.IDLE:
+			pass
+		State.PATROL:
+			pass
+		State.CHASE:
+			pass
+		State.COMBAT:
+			pass
+		State.FLEE:
+			pass
+		State.DEAD:
+			pass
 
-## 退出状态（子类可重写）
-func _exit_state(state: AIState) -> void:
+## 退出状态（子类可覆盖）
+func _exit_state(state: State) -> void:
 	match state:
-		AIState.IDLE:
-			_exit_idle()
-		AIState.PATROL:
-			_exit_patrol()
-		AIState.ALERT:
-			_exit_alert()
-		AIState.COMBAT:
-			_exit_combat()
-		AIState.FLEE:
-			_exit_flee()
-		AIState.DEAD:
-			_exit_dead()
-
-## 状态进入/退出钩子（子类重写）
-func _enter_idle() -> void: pass
-func _exit_idle() -> void: pass
-func _enter_patrol() -> void: pass
-func _exit_patrol() -> void: pass
-func _enter_alert() -> void: pass
-func _exit_alert() -> void: pass
-func _enter_combat() -> void: pass
-func _exit_combat() -> void: pass
-func _enter_flee() -> void: pass
-func _exit_flee() -> void: pass
-func _enter_dead() -> void: pass
-func _exit_dead() -> void: pass
-
-## 感知系统 - 检测范围内的目标
-func detect_targets(detection_radius: float = 0.0) -> Array:
-	if detection_radius <= 0:
-		detection_radius = perception_radius
-
-	var targets = []
-	var space_state = entity.get_world_3d().direct_space_state if entity is Node3D else entity.get_world_2d().direct_space_state
-
-	# 获取范围内的所有物体
-	# 这里简化处理，实际应该使用物理查询
-	var all_entities = get_tree().get_nodes_in_group("entities")
-
-	for target in all_entities:
-		if target == entity:
-			continue
-
-		var distance = _get_distance_to(target)
-		if distance <= detection_radius:
-			targets.append(target)
-
-	return targets
-
-## 获取到目标的距离
-func _get_distance_to(target: Node) -> float:
-	if entity is Node3D and target is Node3D:
-		return entity.global_position.distance_to(target.global_position)
-	elif entity is Node2D and target is Node2D:
-		return entity.global_position.distance_to(target.global_position)
-	return INF
+		State.COMBAT:
+			# 退出战斗时清理
+			pass
 
 ## 设置目标
 func set_target(target: Node) -> void:
 	if current_target == target:
 		return
 
+	var had_target = current_target != null
 	current_target = target
 
 	if target:
 		target_acquired.emit(target)
-	else:
+		if debug_mode:
+			print("[AIController] %s: Target acquired - %s" % [controlled_entity.name, target.name])
+	elif had_target:
 		target_lost.emit()
+		if debug_mode:
+			print("[AIController] %s: Target lost" % controlled_entity.name)
 
 ## 清除目标
 func clear_target() -> void:
 	set_target(null)
 
-## 检查目标是否有效
-func is_target_valid() -> bool:
-	if current_target == null:
+## 获取与目标的距离
+func _get_distance_to_target() -> float:
+	if not current_target or not controlled_entity:
+		return INF
+
+	if controlled_entity is Node3D and current_target is Node3D:
+		return controlled_entity.global_position.distance_to(current_target.global_position)
+	elif controlled_entity is Node2D and current_target is Node2D:
+		return controlled_entity.global_position.distance_to(current_target.global_position)
+
+	return INF
+
+## 获取战斗范围（子类应覆盖）
+func _get_combat_range() -> float:
+	return 3.0  # 默认3米
+
+## 检查实体是否存活
+func is_alive() -> bool:
+	if not controlled_entity:
 		return false
 
-	if not is_instance_valid(current_target):
-		clear_target()
-		return false
+	if controlled_entity.has_method("is_alive"):
+		return controlled_entity.is_alive()
 
-	# 检查目标是否死亡
-	if current_target.has_method("is_dead") and current_target.is_dead():
-		clear_target()
-		return false
+	# 检查健康组件
+	if controlled_entity.has_node("HealthComponent"):
+		var health = controlled_entity.get_node("HealthComponent")
+		if health.has_method("is_alive"):
+			return health.is_alive()
 
-	return true
+	return current_state != State.DEAD
 
-## 检查是否在攻击范围内
-func is_in_attack_range() -> bool:
-	if not is_target_valid():
-		return false
+## 处理实体死亡
+func on_entity_died() -> void:
+	change_state(State.DEAD)
+	clear_target()
 
-	return _get_distance_to(current_target) <= attack_range
+	if debug_mode:
+		print("[AIController] %s: Died" % controlled_entity.name)
 
-## 检查实体血量是否低
-func is_health_low() -> bool:
-	if not entity.has_method("get_health_percentage"):
-		return false
+## 获取当前状态名称
+func get_current_state_name() -> String:
+	return State.keys()[current_state]
 
-	return entity.get_health_percentage() <= flee_health_threshold
+## 是否在战斗中
+func is_in_combat() -> bool:
+	return current_state == State.COMBAT
 
-## 移动到目标
-func move_towards(target_position: Vector3) -> void:
-	if entity.has_method("move_to"):
-		entity.move_to(target_position)
-
-## 攻击当前目标
-func attack_target() -> void:
-	if not is_target_valid():
-		return
-
-	if entity.has_method("attack"):
-		entity.attack(current_target)
-
-## 使用技能
-func use_skill(skill_id: String) -> bool:
-	if entity.has_method("use_skill"):
-		return entity.use_skill(skill_id, current_target)
-	return false
-
-## 黑板操作
-func set_blackboard_value(key: String, value) -> void:
-	blackboard[key] = value
-
-func get_blackboard_value(key: String, default_value = null):
-	return blackboard.get(key, default_value)
-
-func has_blackboard_value(key: String) -> bool:
-	return blackboard.has(key)
-
-func clear_blackboard() -> void:
-	blackboard.clear()
-
-## 获取实体名称
-func get_entity_name() -> String:
-	if entity.has_method("get_display_name"):
-		return entity.get_display_name()
-	return entity.name if entity else "Unknown"
+## 是否有目标
+func has_target() -> bool:
+	return current_target != null and is_instance_valid(current_target)
