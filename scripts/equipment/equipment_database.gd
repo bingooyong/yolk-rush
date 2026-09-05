@@ -1,5 +1,8 @@
 extends Node
+class_name EquipmentDatabase
 ## 装备数据库 - 加载和管理所有装备数据
+
+const EquipmentItemClass = preload("res://scripts/equipment/equipment_item.gd")
 
 var equipment_data: Dictionary = {
 	"weapons": [],
@@ -40,28 +43,28 @@ func load_equipment_database() -> void:
 	# 加载武器
 	if data.has("weapons"):
 		for weapon_data in data["weapons"]:
-			var item := EquipmentItem.from_json(weapon_data)
+			var item = EquipmentItemClass.from_json(weapon_data)
 			equipment_data["weapons"].append(item)
 			equipment_by_id[item.id] = item
 
 	# 加载护甲
 	if data.has("armors"):
 		for armor_data in data["armors"]:
-			var item := EquipmentItem.from_json(armor_data)
+			var item = EquipmentItemClass.from_json(armor_data)
 			equipment_data["armors"].append(item)
 			equipment_by_id[item.id] = item
 
 	# 加载饰品
 	if data.has("accessories"):
 		for accessory_data in data["accessories"]:
-			var item := EquipmentItem.from_json(accessory_data)
+			var item = EquipmentItemClass.from_json(accessory_data)
 			equipment_data["accessories"].append(item)
 			equipment_by_id[item.id] = item
 
 	print("[EquipmentDatabase] Loaded %d equipment items" % equipment_by_id.size())
 
 ## 根据 ID 获取装备
-func get_equipment_by_id(item_id: String) -> EquipmentItem:
+func get_equipment_by_id(item_id: String) :
 	if equipment_by_id.has(item_id):
 		return equipment_by_id[item_id].duplicate_item()
 
@@ -69,59 +72,59 @@ func get_equipment_by_id(item_id: String) -> EquipmentItem:
 	return null
 
 ## 获取所有武器
-func get_all_weapons() -> Array[EquipmentItem]:
+func get_all_weapons() -> Array:
 	return equipment_data["weapons"].duplicate()
 
 ## 获取所有护甲
-func get_all_armors() -> Array[EquipmentItem]:
+func get_all_armors() -> Array:
 	return equipment_data["armors"].duplicate()
 
 ## 获取所有饰品
-func get_all_accessories() -> Array[EquipmentItem]:
+func get_all_accessories() -> Array:
 	return equipment_data["accessories"].duplicate()
 
 ## 根据类型获取装备
-func get_equipment_by_type(equipment_type: EquipmentItem.EquipmentType) -> Array[EquipmentItem]:
-	var result: Array[EquipmentItem] = []
+func get_equipment_by_type(equipment_type) -> Array:
+	var result: Array = []
 
 	for item_id in equipment_by_id.keys():
-		var item: EquipmentItem = equipment_by_id[item_id]
+		var item = equipment_by_id[item_id]
 		if item.equipment_type == equipment_type:
 			result.append(item.duplicate_item())
 
 	return result
 
 ## 根据稀有度获取装备
-func get_equipment_by_rarity(rarity: EquipmentItem.Rarity) -> Array[EquipmentItem]:
-	var result: Array[EquipmentItem] = []
+func get_equipment_by_rarity(rarity) -> Array:
+	var result: Array = []
 
 	for item_id in equipment_by_id.keys():
-		var item: EquipmentItem = equipment_by_id[item_id]
+		var item = equipment_by_id[item_id]
 		if item.rarity == rarity:
 			result.append(item.duplicate_item())
 
 	return result
 
 ## 根据等级要求获取装备
-func get_equipment_by_level_range(min_level: int, max_level: int) -> Array[EquipmentItem]:
-	var result: Array[EquipmentItem] = []
+func get_equipment_by_level_range(min_level: int, max_level: int) -> Array:
+	var result: Array = []
 
 	for item_id in equipment_by_id.keys():
-		var item: EquipmentItem = equipment_by_id[item_id]
+		var item = equipment_by_id[item_id]
 		if item.level_requirement >= min_level and item.level_requirement <= max_level:
 			result.append(item.duplicate_item())
 
 	return result
 
 ## 随机获取装备（用于掉落）
-func get_random_equipment(min_level: int = 1, max_level: int = 50, rarity_weights: Dictionary = {}) -> EquipmentItem:
+func get_random_equipment(min_level: int = 1, max_level: int = 50, rarity_weights: Dictionary = {}) :
 	# 默认稀有度权重
 	var default_weights := {
-		EquipmentItem.Rarity.COMMON: 50.0,
-		EquipmentItem.Rarity.UNCOMMON: 30.0,
-		EquipmentItem.Rarity.RARE: 15.0,
-		EquipmentItem.Rarity.EPIC: 4.0,
-		EquipmentItem.Rarity.LEGENDARY: 1.0
+		EquipmentItemClass.Rarity.COMMON: 50.0,
+		EquipmentItemClass.Rarity.UNCOMMON: 30.0,
+		EquipmentItemClass.Rarity.RARE: 15.0,
+		EquipmentItemClass.Rarity.EPIC: 4.0,
+		EquipmentItemClass.Rarity.LEGENDARY: 1.0
 	}
 
 	var weights := rarity_weights if not rarity_weights.is_empty() else default_weights
@@ -130,9 +133,9 @@ func get_random_equipment(min_level: int = 1, max_level: int = 50, rarity_weight
 	var chosen_rarity := _weighted_random_rarity(weights)
 
 	# 获取符合条件的装备
-	var candidates: Array[EquipmentItem] = []
+	var candidates: Array = []
 	for item_id in equipment_by_id.keys():
-		var item: EquipmentItem = equipment_by_id[item_id]
+		var item = equipment_by_id[item_id]
 		if item.rarity == chosen_rarity and item.level_requirement >= min_level and item.level_requirement <= max_level:
 			candidates.append(item)
 
@@ -141,11 +144,11 @@ func get_random_equipment(min_level: int = 1, max_level: int = 50, rarity_weight
 		return null
 
 	# 随机选择一个
-	var random_item := candidates[randi() % candidates.size()]
+	var random_item = candidates[randi() % candidates.size()]
 	return random_item.duplicate_item()
 
 ## 加权随机选择稀有度
-func _weighted_random_rarity(weights: Dictionary) -> EquipmentItem.Rarity:
+func _weighted_random_rarity(weights: Dictionary) -> int:
 	var total_weight := 0.0
 	for weight in weights.values():
 		total_weight += weight
@@ -158,7 +161,7 @@ func _weighted_random_rarity(weights: Dictionary) -> EquipmentItem.Rarity:
 		if rand_value <= cumulative:
 			return rarity
 
-	return EquipmentItem.Rarity.COMMON
+	return EquipmentItemClass.Rarity.COMMON
 
 ## 获取装备总数
 func get_total_count() -> int:
@@ -181,13 +184,13 @@ func get_statistics() -> Dictionary:
 	}
 
 	for item_id in equipment_by_id.keys():
-		var item: EquipmentItem = equipment_by_id[item_id]
+		var item = equipment_by_id[item_id]
 		match item.rarity:
-			EquipmentItem.Rarity.COMMON: stats["by_rarity"]["common"] += 1
-			EquipmentItem.Rarity.UNCOMMON: stats["by_rarity"]["uncommon"] += 1
-			EquipmentItem.Rarity.RARE: stats["by_rarity"]["rare"] += 1
-			EquipmentItem.Rarity.EPIC: stats["by_rarity"]["epic"] += 1
-			EquipmentItem.Rarity.LEGENDARY: stats["by_rarity"]["legendary"] += 1
+			EquipmentItemClass.Rarity.COMMON: stats["by_rarity"]["common"] += 1
+			EquipmentItemClass.Rarity.UNCOMMON: stats["by_rarity"]["uncommon"] += 1
+			EquipmentItemClass.Rarity.RARE: stats["by_rarity"]["rare"] += 1
+			EquipmentItemClass.Rarity.EPIC: stats["by_rarity"]["epic"] += 1
+			EquipmentItemClass.Rarity.LEGENDARY: stats["by_rarity"]["legendary"] += 1
 
 	return stats
 
@@ -195,7 +198,7 @@ func get_statistics() -> Dictionary:
 func _debug_print_all_equipment() -> void:
 	print("[EquipmentDatabase] === All Equipment ===")
 	for item_id in equipment_by_id.keys():
-		var item: EquipmentItem = equipment_by_id[item_id]
+		var item = equipment_by_id[item_id]
 		print("  %s (%s) - %s | Level %d" % [
 			item.item_name,
 			item.id,

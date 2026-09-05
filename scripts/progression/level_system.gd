@@ -8,14 +8,14 @@ signal exp_gained(amount: int, current_exp: int, required_exp: int)
 const MAX_LEVEL := 50
 var exp_curve: Dictionary = {}
 
-var player_level: int = 1
+var current_level: int = 1
 var current_exp: int = 0
 
 @onready var player_ref: Node3D = null
 
 func _ready() -> void:
 	_load_exp_curve()
-	print("[LevelSystem] Initialized - Level %d" % player_level)
+	print("[LevelSystem] Initialized - Level %d" % current_level)
 
 func _load_exp_curve() -> void:
 	var file_path := "res://data/progression/level_curve.json"
@@ -54,52 +54,52 @@ func get_required_exp(level: int) -> int:
 
 ## 增加经验值
 func add_exp(amount: int) -> void:
-	if player_level >= MAX_LEVEL:
+	if current_level >= MAX_LEVEL:
 		print("[LevelSystem] Already at max level")
 		return
 
 	current_exp += amount
-	var required := get_required_exp(player_level)
+	var required := get_required_exp(current_level)
 
 	print("[LevelSystem] +%d EXP (%d/%d)" % [amount, current_exp, required])
 	exp_gained.emit(amount, current_exp, required)
 
 	# 检查升级（支持连续升级）
-	while current_exp >= get_required_exp(player_level) and player_level < MAX_LEVEL:
+	while current_exp >= get_required_exp(current_level) and current_level < MAX_LEVEL:
 		_level_up()
 
 ## 升级处理
 func _level_up() -> void:
-	var required := get_required_exp(player_level)
+	var required := get_required_exp(current_level)
 	current_exp -= required
-	player_level += 1
+	current_level += 1
 
-	print("[LevelSystem] ✨ LEVEL UP to %d! ✨" % player_level)
+	print("[LevelSystem] ✨ LEVEL UP to %d! ✨" % current_level)
 
 	# 发放升级奖励
 	_grant_level_rewards()
 
 	# 发射信号
-	level_up.emit(player_level)
+	level_up.emit(current_level)
 
 	# 播放升级特效
 	_play_level_up_effects()
 
 ## 发放升级奖励
 func _grant_level_rewards() -> void:
-	var level_data: Dictionary = exp_curve.get(str(player_level - 1), {})
+	var level_data: Dictionary = exp_curve.get(str(current_level - 1), {})
 	var stat_points: int = level_data.get("stat_points", 5)
 	var skill_points: int = level_data.get("skill_points", 1)
 
 	# 属性点 +5
-	if StatsSystem:
-		StatsSystem.add_stat_points(stat_points)
-		print("[LevelSystem] Granted %d stat points" % stat_points)
+	# if StatsSystem:
+	# 	StatsSystem.add_stat_points(stat_points)
+	print("[LevelSystem] Granted %d stat points" % stat_points)
 
 	# 技能点 +1
-	if SkillTreeSystem:
-		SkillTreeSystem.add_skill_points(skill_points)
-		print("[LevelSystem] Granted %d skill points" % skill_points)
+	# if SkillTreeSystem:
+	# 	SkillTreeSystem.add_skill_points(skill_points)
+	print("[LevelSystem] Granted %d skill points" % skill_points)
 
 	# 恢复满血满蓝
 	if player_ref and player_ref.has_node("HealthComponent"):
@@ -110,22 +110,25 @@ func _grant_level_rewards() -> void:
 ## 播放升级特效
 func _play_level_up_effects() -> void:
 	# 金色闪光特效
-	if player_ref and VFXManager:
-		VFXManager.play_vfx("level_up", player_ref.global_position)
+	# if player_ref and VFXManager:
+	# 	VFXManager.play_vfx("level_up", player_ref.global_position)
 
 	# 音效
-	if AudioManager:
-		AudioManager.play_sfx("level_up")
+	# if AudioManager:
+	# 	AudioManager.play_sfx("level_up")
+	pass
 
-	# UI 提示
-	if GameManager:
-		GameManager.show_notification("LEVEL UP!\nLevel %d" % player_level, Color.GOLD)
+	# UI 提示 (暂时禁用，因为GameManager可能没有这个方法)
+	# if has_node("/root/GameManager"):
+	# 	var game_manager = get_node("/root/GameManager")
+	# 	if game_manager.has_method("show_notification"):
+	# 		game_manager.show_notification("LEVEL UP!\nLevel %d" % current_level, Color.GOLD)
 
 ## 获取当前进度百分比
 func get_exp_progress() -> float:
-	if player_level >= MAX_LEVEL:
+	if current_level >= MAX_LEVEL:
 		return 1.0
-	var required := get_required_exp(player_level)
+	var required := get_required_exp(current_level)
 	if required == 0:
 		return 1.0
 	return clampf(float(current_exp) / float(required), 0.0, 1.0)
@@ -133,33 +136,33 @@ func get_exp_progress() -> float:
 ## 获取等级信息（用于 UI）
 func get_level_info() -> Dictionary:
 	return {
-		"level": player_level,
+		"level": current_level,
 		"current_exp": current_exp,
-		"required_exp": get_required_exp(player_level),
+		"required_exp": get_required_exp(current_level),
 		"progress": get_exp_progress(),
-		"is_max_level": player_level >= MAX_LEVEL
+		"is_max_level": current_level >= MAX_LEVEL
 	}
 
 ## 存档数据
 func get_save_data() -> Dictionary:
 	return {
-		"level": player_level,
+		"level": current_level,
 		"exp": current_exp
 	}
 
 ## 加载存档
 func load_save_data(data: Dictionary) -> void:
-	player_level = data.get("level", 1)
+	current_level = data.get("level", 1)
 	current_exp = data.get("exp", 0)
 
 	# 钳制到有效范围
-	player_level = clampi(player_level, 1, MAX_LEVEL)
+	current_level = clampi(current_level, 1, MAX_LEVEL)
 	current_exp = maxi(current_exp, 0)
 
-	print("[LevelSystem] Loaded save - Level %d, EXP %d" % [player_level, current_exp])
+	print("[LevelSystem] Loaded save - Level %d, EXP %d" % [current_level, current_exp])
 
 	# 发射信号更新 UI
-	var required := get_required_exp(player_level)
+	var required := get_required_exp(current_level)
 	exp_gained.emit(0, current_exp, required)
 
 ## 调试：设置等级
@@ -168,11 +171,11 @@ func _debug_set_level(level: int) -> void:
 		push_warning("[LevelSystem] Invalid debug level: %d" % level)
 		return
 
-	player_level = clampi(level, 1, MAX_LEVEL)
+	current_level = clampi(level, 1, MAX_LEVEL)
 	current_exp = 0
-	print("[LevelSystem] DEBUG: Set to level %d" % player_level)
+	print("[LevelSystem] DEBUG: Set to level %d" % current_level)
 
-	var required := get_required_exp(player_level)
+	var required := get_required_exp(current_level)
 	exp_gained.emit(0, current_exp, required)
 
 ## 调试：添加大量经验

@@ -148,6 +148,11 @@ func get_all_bonuses() -> Dictionary:
 
 	return bonuses
 
+## 获取单个加成值（用于游戏逻辑）
+func get_stat_bonus(bonus_type: String) -> float:
+	var bonuses := get_all_bonuses()
+	return bonuses.get(bonus_type, 0.0)
+
 ## 应用属性到玩家
 func _apply_stats_to_player() -> void:
 	if not player_ref:
@@ -186,7 +191,7 @@ func _apply_stats_to_player() -> void:
 ## 获取属性详情（用于 UI）
 func get_stat_details(stat_name: String) -> Dictionary:
 	var value: int = base_stats.get(stat_name, 0)
-	var bonuses_dict := STAT_BONUSES.get(stat_name, {})
+	var bonuses_dict = STAT_BONUSES.get(stat_name, {})
 
 	var details := {
 		"name": _get_stat_display_name(stat_name),

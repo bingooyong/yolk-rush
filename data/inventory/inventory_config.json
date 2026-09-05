@@ -1,0 +1,28 @@
+{
+  "inventory": {
+    "max_slots": 48,
+    "default_stack_size": 99,
+    "quick_bar_slots": 8
+  },
+  "item_types": {
+    "equipment": "装备",
+    "consumable": "消耗品",
+    "material": "材料",
+    "quest": "任务物品",
+    "currency": "货币"
+  },
+  "sort_modes": [
+    "rarity",
+    "type",
+    "name",
+    "quantity",
+    "level"
+  ],
+  "filters": [
+    "all",
+    "equipment",
+    "consumables",
+    "materials",
+    "quest_items"
+  ]
+}

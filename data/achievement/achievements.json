@@ -1,0 +1,205 @@
+{
+  "achievements": [
+    {
+      "id": "newcomer",
+      "title": "新手冒险者",
+      "description": "达到5级",
+      "icon_path": "res://assets/icons/achievements/newcomer.png",
+      "type": "LEVEL",
+      "requirement": 5,
+      "reward": {
+        "exp": 100,
+        "gold": 50
+      },
+      "hidden": false
+    },
+    {
+      "id": "veteran",
+      "title": "老练冒险者",
+      "description": "达到20级",
+      "icon_path": "res://assets/icons/achievements/veteran.png",
+      "type": "LEVEL",
+      "requirement": 20,
+      "reward": {
+        "exp": 500,
+        "gold": 200,
+        "skill_points": 1
+      },
+      "hidden": false
+    },
+    {
+      "id": "master",
+      "title": "大师级冒险者",
+      "description": "达到50级",
+      "icon_path": "res://assets/icons/achievements/master.png",
+      "type": "LEVEL",
+      "requirement": 50,
+      "reward": {
+        "exp": 2000,
+        "gold": 1000,
+        "skill_points": 3
+      },
+      "hidden": false
+    },
+    {
+      "id": "first_blood",
+      "title": "初次胜利",
+      "description": "击败第一个敌人",
+      "icon_path": "res://assets/icons/achievements/first_blood.png",
+      "type": "KILL",
+      "requirement": 1,
+      "reward": {
+        "exp": 50,
+        "gold": 25
+      },
+      "hidden": false
+    },
+    {
+      "id": "slayer",
+      "title": "杀戮者",
+      "description": "击败100个敌人",
+      "icon_path": "res://assets/icons/achievements/slayer.png",
+      "type": "KILL",
+      "requirement": 100,
+      "reward": {
+        "exp": 300,
+        "gold": 150
+      },
+      "hidden": false
+    },
+    {
+      "id": "executioner",
+      "title": "处刑者",
+      "description": "击败1000个敌人",
+      "icon_path": "res://assets/icons/achievements/executioner.png",
+      "type": "KILL",
+      "requirement": 1000,
+      "reward": {
+        "exp": 1500,
+        "gold": 750,
+        "skill_points": 2
+      },
+      "hidden": false
+    },
+    {
+      "id": "crit_master",
+      "title": "暴击大师",
+      "description": "触发100次暴击",
+      "icon_path": "res://assets/icons/achievements/crit_master.png",
+      "type": "COMBAT",
+      "requirement": 100,
+      "reward": {
+        "exp": 400,
+        "gold": 200
+      },
+      "hidden": false
+    },
+    {
+      "id": "collector",
+      "title": "收藏家",
+      "description": "收集50种不同的物品",
+      "icon_path": "res://assets/icons/achievements/collector.png",
+      "type": "COLLECT",
+      "requirement": 50,
+      "reward": {
+        "exp": 300,
+        "gold": 150
+      },
+      "hidden": false
+    },
+    {
+      "id": "hoarder",
+      "title": "囤积者",
+      "description": "背包达到满状态100次",
+      "icon_path": "res://assets/icons/achievements/hoarder.png",
+      "type": "COLLECT",
+      "requirement": 100,
+      "reward": {
+        "exp": 200,
+        "gold": 100
+      },
+      "hidden": false
+    },
+    {
+      "id": "wealthy",
+      "title": "富翁",
+      "description": "拥有10000金币",
+      "icon_path": "res://assets/icons/achievements/wealthy.png",
+      "type": "COLLECT",
+      "requirement": 10000,
+      "reward": {
+        "exp": 500,
+        "skill_points": 1
+      },
+      "hidden": false
+    },
+    {
+      "id": "well_equipped",
+      "title": "全副武装",
+      "description": "装备所有装备槽位",
+      "icon_path": "res://assets/icons/achievements/well_equipped.png",
+      "type": "EQUIPMENT",
+      "requirement": 1,
+      "reward": {
+        "exp": 250,
+        "gold": 100
+      },
+      "hidden": false
+    },
+    {
+      "id": "legendary_gear",
+      "title": "传奇装备",
+      "description": "获得一件传说品质装备",
+      "icon_path": "res://assets/icons/achievements/legendary.png",
+      "type": "EQUIPMENT",
+      "requirement": 1,
+      "reward": {
+        "exp": 1000,
+        "gold": 500,
+        "skill_points": 2
+      },
+      "hidden": false
+    },
+    {
+      "id": "skill_learner",
+      "title": "技能学徒",
+      "description": "解锁5个技能",
+      "icon_path": "res://assets/icons/achievements/skill_learner.png",
+      "type": "SKILL",
+      "requirement": 5,
+      "reward": {
+        "exp": 200,
+        "skill_points": 1
+      },
+      "hidden": false
+    },
+    {
+      "id": "skill_master",
+      "title": "技能大师",
+      "description": "解锁15个技能",
+      "icon_path": "res://assets/icons/achievements/skill_master.png",
+      "type": "SKILL",
+      "requirement": 15,
+      "reward": {
+        "exp": 800,
+        "gold": 400,
+        "skill_points": 2
+      },
+      "hidden": false
+    },
+    {
+      "id": "ultimate_power",
+      "title": "终极力量",
+      "description": "将任意技能升至最高等级",
+      "icon_path": "res://assets/icons/achievements/ultimate.png",
+      "type": "SKILL",
+      "requirement": 1,
+      "reward": {
+        "exp": 1500,
+        "gold": 750,
+        "skill_points": 3
+      },
+      "hidden": false
+    }
+  ]
+}

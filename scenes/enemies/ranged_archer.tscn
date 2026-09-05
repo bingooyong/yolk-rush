@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://d2x8kp4vqn7y1"]
 
-[ext_resource type="Script" path="res://scripts/game/advanced_enemy.gd" id="1_ranged"]
+[ext_resource type="Script" path="res://scripts/ai/advanced_enemy.gd" id="1_ranged"]
 
 [node name="RangedArcher" type="CharacterBody3D" groups=["enemy"]]
 script = ExtResource("1_ranged")

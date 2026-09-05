@@ -1,0 +1,80 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5n8k3m9pqxwv"]
+
+[ext_resource type="Script" path="res://scripts/ui/achievement_panel.gd" id="1"]
+
+[node name="AchievementPanel" type="Panel"]
+custom_minimum_size = Vector2(800, 600)
+script = ExtResource("1")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "成就"
+
+[node name="StatsLabel" type="Label" parent="VBox/Header"]
+layout_mode = 2
+text = "完成: 0/0 (0%)"
+
+[node name="CloseButton" type="Button" parent="VBox/Header"]
+layout_mode = 2
+text = "X"
+
+[node name="FilterBar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="FilterLabel" type="Label" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "筛选:"
+
+[node name="AllButton" type="Button" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "全部"
+
+[node name="KillButton" type="Button" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "击杀"
+
+[node name="CollectButton" type="Button" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "收集"
+
+[node name="LevelButton" type="Button" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "等级"
+
+[node name="CombatButton" type="Button" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "战斗"
+
+[node name="ExplorationButton" type="Button" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "探索"
+
+[node name="SocialButton" type="Button" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "社交"
+
+[node name="MiscButton" type="Button" parent="VBox/FilterBar"]
+layout_mode = 2
+text = "其他"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="AchievementList" type="VBoxContainer" parent="VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10

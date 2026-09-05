@@ -1,5 +1,4 @@
 extends Resource
-class_name EquipmentItem
 ## 装备物品数据类
 
 enum Rarity {
@@ -32,8 +31,9 @@ enum EquipmentType {
 @export var stats: Dictionary = {}
 
 ## 从 JSON 数据创建装备
-static func from_json(data: Dictionary) -> EquipmentItem:
-	var item := EquipmentItem.new()
+static func from_json(data: Dictionary):
+	var EquipmentItemClass = load("res://scripts/equipment/equipment_item.gd")
+	var item = EquipmentItemClass.new()
 
 	item.id = data.get("id", "")
 	item.item_name = data.get("name", "")
@@ -138,8 +138,9 @@ func get_tooltip_text() -> String:
 	return text
 
 ## 复制装备
-func duplicate_item() -> EquipmentItem:
-	var copy := EquipmentItem.new()
+func duplicate_item():
+	var EquipmentItemClass = load("res://scripts/equipment/equipment_item.gd")
+	var copy = EquipmentItemClass.new()
 	copy.id = id
 	copy.item_name = item_name
 	copy.equipment_type = equipment_type
@@ -156,7 +157,8 @@ func to_save_data() -> Dictionary:
 	}
 
 ## 从存档数据加载（配合装备数据库）
-static func from_save_data(save_data: Dictionary, database: Node) -> EquipmentItem:
+static func from_save_data(save_data: Dictionary, database: Node):
+	var EquipmentItemClass = load("res://scripts/equipment/equipment_item.gd")
 	var item_id: String = save_data.get("id", "")
 	if database and database.has_method("get_equipment_by_id"):
 		return database.get_equipment_by_id(item_id)

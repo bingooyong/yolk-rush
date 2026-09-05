@@ -1,0 +1,119 @@
+{
+  "loot_tables": [
+    {
+      "id": "goblin",
+      "name": "哥布林掉落",
+      "entries": [
+        {"item_id": "health_potion_small", "chance": 0.3, "min_quantity": 1, "max_quantity": 2},
+        {"item_id": "iron_ore", "chance": 0.5, "min_quantity": 1, "max_quantity": 3},
+        {"item_id": "copper_ring", "chance": 0.1, "min_quantity": 1, "max_quantity": 1}
+      ]
+    },
+    {
+      "id": "orc",
+      "name": "兽人掉落",
+      "entries": [
+        {"item_id": "health_potion_medium", "chance": 0.25, "min_quantity": 1, "max_quantity": 2},
+        {"item_id": "iron_ore", "chance": 0.4, "min_quantity": 2, "max_quantity": 5},
+        {"item_id": "silver_ore", "chance": 0.2, "min_quantity": 1, "max_quantity": 3},
+        {"item_id": "iron_sword", "chance": 0.05, "min_quantity": 1, "max_quantity": 1}
+      ]
+    },
+    {
+      "id": "troll",
+      "name": "巨魔掉落",
+      "entries": [
+        {"item_id": "health_potion_large", "chance": 0.4, "min_quantity": 1, "max_quantity": 2},
+        {"item_id": "silver_ore", "chance": 0.5, "min_quantity": 2, "max_quantity": 5},
+        {"item_id": "gold_ore", "chance": 0.15, "min_quantity": 1, "max_quantity": 2},
+        {"item_id": "steel_sword", "chance": 0.08, "min_quantity": 1, "max_quantity": 1}
+      ]
+    },
+    {
+      "id": "dragon",
+      "name": "龙掉落",
+      "entries": [
+        {"item_id": "health_potion_large", "chance": 0.8, "min_quantity": 3, "max_quantity": 5},
+        {"item_id": "mana_potion_medium", "chance": 0.6, "min_quantity": 2, "max_quantity": 4},
+        {"item_id": "gold_ore", "chance": 0.9, "min_quantity": 5, "max_quantity": 10},
+        {"item_id": "mythril_sword", "chance": 0.3, "min_quantity": 1, "max_quantity": 1},
+        {"item_id": "dragon_scale_armor", "chance": 0.2, "min_quantity": 1, "max_quantity": 1}
+      ]
+    },
+    {
+      "id": "chest_common",
+      "name": "普通宝箱",
+      "entries": [
+        {"item_id": "health_potion_small", "chance": 0.6, "min_quantity": 1, "max_quantity": 3},
+        {"item_id": "mana_potion_small", "chance": 0.5, "min_quantity": 1, "max_quantity": 2},
+        {"item_id": "iron_ore", "chance": 0.7, "min_quantity": 3, "max_quantity": 8},
+        {"item_id": "copper_ring", "chance": 0.2, "min_quantity": 1, "max_quantity": 1}
+      ]
+    },
+    {
+      "id": "chest_rare",
+      "name": "稀有宝箱",
+      "entries": [
+        {"item_id": "health_potion_medium", "chance": 0.7, "min_quantity": 2, "max_quantity": 4},
+        {"item_id": "mana_potion_medium", "chance": 0.6, "min_quantity": 2, "max_quantity": 3},
+        {"item_id": "silver_ore", "chance": 0.8, "min_quantity": 5, "max_quantity": 10},
+        {"item_id": "gold_ore", "chance": 0.4, "min_quantity": 2, "max_quantity": 5},
+        {"item_id": "steel_sword", "chance": 0.3, "min_quantity": 1, "max_quantity": 1},
+        {"item_id": "silver_ring", "chance": 0.25, "min_quantity": 1, "max_quantity": 1}
+      ]
+    },
+    {
+      "id": "chest_legendary",
+      "name": "传奇宝箱",
+      "entries": [
+        {"item_id": "health_potion_large", "chance": 0.9, "min_quantity": 5, "max_quantity": 10},
+        {"item_id": "mana_potion_medium", "chance": 0.8, "min_quantity": 3, "max_quantity": 6},
+        {"item_id": "gold_ore", "chance": 0.9, "min_quantity": 10, "max_quantity": 20},
+        {"item_id": "mythril_sword", "chance": 0.6, "min_quantity": 1, "max_quantity": 1},
+        {"item_id": "legendary_holy_sword", "chance": 0.1, "min_quantity": 1, "max_quantity": 1},
+        {"item_id": "dragon_scale_armor", "chance": 0.4, "min_quantity": 1, "max_quantity": 1}
+      ]
+    },
+    {
+      "id": "boss_goblin_king",
+      "name": "哥布林王掉落",
+      "entries": [
+        {"item_id": "health_potion_medium", "chance": 0.9, "min_quantity": 3, "max_quantity": 5},
+        {"item_id": "iron_ore", "chance": 0.8, "min_quantity": 10, "max_quantity": 15},
+        {"item_id": "silver_ore", "chance": 0.6, "min_quantity": 5, "max_quantity": 10},
+        {"item_id": "iron_sword", "chance": 0.5, "min_quantity": 1, "max_quantity": 1},
+        {"item_id": "goblin_crown", "chance": 1.0, "min_quantity": 1, "max_quantity": 1}
+      ]
+    },
+    {
+      "id": "boss_orc_warchief",
+      "name": "兽人酋长掉落",
+      "entries": [
+        {"item_id": "health_potion_large", "chance": 0.9, "min_quantity": 3, "max_quantity": 5},
+        {"item_id": "silver_ore", "chance": 0.8, "min_quantity": 10, "max_quantity": 15},
+        {"item_id": "gold_ore", "chance": 0.5, "min_quantity": 5, "max_quantity": 10},
+        {"item_id": "steel_sword", "chance": 0.6, "min_quantity": 1, "max_quantity": 1},
+        {"item_id": "orc_battle_axe", "chance": 1.0, "min_quantity": 1, "max_quantity": 1}
+      ]
+    }
+  ],
+  "item_rarities": {
+    "health_potion_small": "common",
+    "health_potion_medium": "common",
+    "health_potion_large": "uncommon",
+    "mana_potion_small": "common",
+    "mana_potion_medium": "common",
+    "iron_ore": "common",
+    "silver_ore": "uncommon",
+    "gold_ore": "rare",
+    "iron_sword": "common",
+    "steel_sword": "uncommon",
+    "mythril_sword": "rare",
+    "legendary_holy_sword": "legendary",
+    "copper_ring": "common",
+    "silver_ring": "uncommon",
+    "dragon_scale_armor": "epic",
+    "goblin_crown": "rare",
+    "orc_battle_axe": "rare"
+  }
+}

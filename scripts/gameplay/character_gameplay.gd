@@ -5,7 +5,7 @@ const GRAVITY: float = 9.8
 
 @export var character_id: String = "yolk_hero"
 
-var character_data: Dictionary =
+var character_data: Dictionary = {}
 var collision_profile: Dictionary = {}
 
 ## 战斗组件

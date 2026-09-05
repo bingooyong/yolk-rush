@@ -1,6 +1,5 @@
 extends Node
-class_name AudioManager
-## 音效管理器
+## 音效管理器 - 不使用 class_name 以避免与 Autoload 单例名称冲突
 ## Phase 6: 音效系统
 
 ## 音效类型

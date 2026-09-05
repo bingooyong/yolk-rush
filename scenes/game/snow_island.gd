@@ -128,7 +128,7 @@ func _setup_enemy_callbacks(enemy: Node3D) -> void:
 
 func _setup_skill_system() -> void:
 	## 为玩家添加技能系统
-	var SkillSystem := preload("res://scripts/game/skill_system.gd")
+	var SkillSystem := preload("res://scripts/systems/skill_system.gd")
 	var skill_system := SkillSystem.new()
 	skill_system.name = "SkillSystem"
 	player.add_child(skill_system)

@@ -1,0 +1,164 @@
+{
+  "items": [
+    {
+      "item_id": "health_potion_small",
+      "buy_price": 50,
+      "sell_price": 10,
+      "stock": -1,
+      "required_level": 1,
+      "category": "consumable"
+    },
+    {
+      "item_id": "health_potion_medium",
+      "buy_price": 150,
+      "sell_price": 30,
+      "stock": -1,
+      "required_level": 5,
+      "category": "consumable"
+    },
+    {
+      "item_id": "health_potion_large",
+      "buy_price": 400,
+      "sell_price": 80,
+      "stock": -1,
+      "required_level": 10,
+      "category": "consumable"
+    },
+    {
+      "item_id": "mana_potion_small",
+      "buy_price": 40,
+      "sell_price": 8,
+      "stock": -1,
+      "required_level": 1,
+      "category": "consumable"
+    },
+    {
+      "item_id": "mana_potion_medium",
+      "buy_price": 120,
+      "sell_price": 24,
+      "stock": -1,
+      "required_level": 5,
+      "category": "consumable"
+    },
+    {
+      "item_id": "iron_sword",
+      "buy_price": 500,
+      "sell_price": 100,
+      "stock": 5,
+      "required_level": 1,
+      "category": "weapon"
+    },
+    {
+      "item_id": "steel_sword",
+      "buy_price": 1500,
+      "sell_price": 300,
+      "stock": 3,
+      "required_level": 10,
+      "category": "weapon"
+    },
+    {
+      "item_id": "iron_helmet",
+      "buy_price": 300,
+      "sell_price": 60,
+      "stock": 5,
+      "required_level": 1,
+      "category": "armor"
+    },
+    {
+      "item_id": "iron_chest",
+      "buy_price": 600,
+      "sell_price": 120,
+      "stock": 5,
+      "required_level": 1,
+      "category": "armor"
+    },
+    {
+      "item_id": "iron_gloves",
+      "buy_price": 250,
+      "sell_price": 50,
+      "stock": 5,
+      "required_level": 1,
+      "category": "armor"
+    },
+    {
+      "item_id": "iron_boots",
+      "buy_price": 250,
+      "sell_price": 50,
+      "stock": 5,
+      "required_level": 1,
+      "category": "armor"
+    },
+    {
+      "item_id": "steel_helmet",
+      "buy_price": 900,
+      "sell_price": 180,
+      "stock": 3,
+      "required_level": 10,
+      "category": "armor"
+    },
+    {
+      "item_id": "steel_chest",
+      "buy_price": 1800,
+      "sell_price": 360,
+      "stock": 3,
+      "required_level": 10,
+      "category": "armor"
+    },
+    {
+      "item_id": "copper_ring",
+      "buy_price": 200,
+      "sell_price": 40,
+      "stock": 10,
+      "required_level": 1,
+      "category": "accessory"
+    },
+    {
+      "item_id": "silver_ring",
+      "buy_price": 800,
+      "sell_price": 160,
+      "stock": 5,
+      "required_level": 8,
+      "category": "accessory"
+    },
+    {
+      "item_id": "iron_ore",
+      "buy_price": 20,
+      "sell_price": 5,
+      "stock": -1,
+      "required_level": 1,
+      "category": "material"
+    },
+    {
+      "item_id": "silver_ore",
+      "buy_price": 50,
+      "sell_price": 12,
+      "stock": -1,
+      "required_level": 5,
+      "category": "material"
+    },
+    {
+      "item_id": "gold_ore",
+      "buy_price": 100,
+      "sell_price": 25,
+      "stock": -1,
+      "required_level": 10,
+      "category": "material"
+    },
+    {
+      "item_id": "repair_kit",
+      "buy_price": 150,
+      "sell_price": 30,
+      "stock": -1,
+      "required_level": 1,
+      "category": "tool"
+    },
+    {
+      "item_id": "teleport_scroll",
+      "buy_price": 300,
+      "sell_price": 60,
+      "stock": -1,
+      "required_level": 5,
+      "category": "tool"
+    }
+  ]
+}
