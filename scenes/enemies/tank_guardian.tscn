@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b5m9n2xqr3z4t"]
 
-[ext_resource type="Script" path="res://scripts/game/advanced_enemy.gd" id="1_tank"]
+[ext_resource type="Script" path="res://scripts/ai/advanced_enemy.gd" id="1_tank"]
 
 [node name="TankGuardian" type="CharacterBody3D" groups=["enemy"]]
 script = ExtResource("1_tank")

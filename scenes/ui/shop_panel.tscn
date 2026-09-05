@@ -1,0 +1,74 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7x5m2k8nqprs"]
+
+[ext_resource type="Script" path="res://scripts/ui/shop_panel.gd" id="1"]
+
+[node name="ShopPanel" type="Panel"]
+custom_minimum_size = Vector2(900, 600)
+script = ExtResource("1")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "商店"
+
+[node name="GoldLabel" type="Label" parent="VBox/Header"]
+layout_mode = 2
+text = "金币: 0"
+
+[node name="CloseButton" type="Button" parent="VBox/Header"]
+layout_mode = 2
+text = "X"
+
+[node name="ShopTabs" type="TabContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="General" type="ScrollContainer" parent="VBox/ShopTabs"]
+layout_mode = 2
+
+[node name="ItemList" type="VBoxContainer" parent="VBox/ShopTabs/General"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="Weapons" type="ScrollContainer" parent="VBox/ShopTabs"]
+visible = false
+layout_mode = 2
+
+[node name="ItemList" type="VBoxContainer" parent="VBox/ShopTabs/Weapons"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="Armor" type="ScrollContainer" parent="VBox/ShopTabs"]
+visible = false
+layout_mode = 2
+
+[node name="ItemList" type="VBoxContainer" parent="VBox/ShopTabs/Armor"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="Consumables" type="ScrollContainer" parent="VBox/ShopTabs"]
+visible = false
+layout_mode = 2
+
+[node name="ItemList" type="VBoxContainer" parent="VBox/ShopTabs/Consumables"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10

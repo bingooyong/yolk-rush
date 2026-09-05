@@ -1,0 +1,191 @@
+{
+  "items": [
+    {
+      "id": "health_potion_small",
+      "item_name": "小型生命药水",
+      "item_type": "CONSUMABLE",
+      "rarity": "COMMON",
+      "max_stack_size": 20,
+      "icon_path": "res://assets/icons/items/health_potion_small.png",
+      "description": "恢复 50 点生命值",
+      "sell_price": 10,
+      "buy_price": 25
+    },
+    {
+      "id": "health_potion_medium",
+      "item_name": "中型生命药水",
+      "item_type": "CONSUMABLE",
+      "rarity": "UNCOMMON",
+      "max_stack_size": 10,
+      "icon_path": "res://assets/icons/items/health_potion_medium.png",
+      "description": "恢复 150 点生命值",
+      "sell_price": 30,
+      "buy_price": 75
+    },
+    {
+      "id": "health_potion_large",
+      "item_name": "大型生命药水",
+      "item_type": "CONSUMABLE",
+      "rarity": "RARE",
+      "max_stack_size": 5,
+      "icon_path": "res://assets/icons/items/health_potion_large.png",
+      "description": "恢复 400 点生命值",
+      "sell_price": 100,
+      "buy_price": 250
+    },
+    {
+      "id": "mana_potion_small",
+      "item_name": "小型法力药水",
+      "item_type": "CONSUMABLE",
+      "rarity": "COMMON",
+      "max_stack_size": 20,
+      "icon_path": "res://assets/icons/items/mana_potion_small.png",
+      "description": "恢复 30 点法力值",
+      "sell_price": 10,
+      "buy_price": 25
+    },
+    {
+      "id": "mana_potion_medium",
+      "item_name": "中型法力药水",
+      "item_type": "CONSUMABLE",
+      "rarity": "UNCOMMON",
+      "max_stack_size": 10,
+      "icon_path": "res://assets/icons/items/mana_potion_medium.png",
+      "description": "恢复 100 点法力值",
+      "sell_price": 30,
+      "buy_price": 75
+    },
+    {
+      "id": "iron_ore",
+      "item_name": "铁矿石",
+      "item_type": "MATERIAL",
+      "rarity": "COMMON",
+      "max_stack_size": 99,
+      "icon_path": "res://assets/icons/items/iron_ore.png",
+      "description": "用于锻造武器和护甲的基础材料",
+      "sell_price": 5,
+      "buy_price": 0
+    },
+    {
+      "id": "silver_ore",
+      "item_name": "银矿石",
+      "item_type": "MATERIAL",
+      "rarity": "UNCOMMON",
+      "max_stack_size": 99,
+      "icon_path": "res://assets/icons/items/silver_ore.png",
+      "description": "稀有的锻造材料",
+      "sell_price": 15,
+      "buy_price": 0
+    },
+    {
+      "id": "gold_ore",
+      "item_name": "金矿石",
+      "item_type": "MATERIAL",
+      "rarity": "RARE",
+      "max_stack_size": 99,
+      "icon_path": "res://assets/icons/items/gold_ore.png",
+      "description": "珍贵的锻造材料",
+      "sell_price": 50,
+      "buy_price": 0
+    },
+    {
+      "id": "mithril_ore",
+      "item_name": "秘银矿石",
+      "item_type": "MATERIAL",
+      "rarity": "EPIC",
+      "max_stack_size": 50,
+      "icon_path": "res://assets/icons/items/mithril_ore.png",
+      "description": "传说中的轻质金属",
+      "sell_price": 200,
+      "buy_price": 0
+    },
+    {
+      "id": "wood_log",
+      "item_name": "木材",
+      "item_type": "MATERIAL",
+      "rarity": "COMMON",
+      "max_stack_size": 99,
+      "icon_path": "res://assets/icons/items/wood_log.png",
+      "description": "基础建筑材料",
+      "sell_price": 2,
+      "buy_price": 0
+    },
+    {
+      "id": "leather",
+      "item_name": "皮革",
+      "item_type": "MATERIAL",
+      "rarity": "COMMON",
+      "max_stack_size": 99,
+      "icon_path": "res://assets/icons/items/leather.png",
+      "description": "用于制作护甲",
+      "sell_price": 8,
+      "buy_price": 0
+    },
+    {
+      "id": "cloth",
+      "item_name": "布料",
+      "item_type": "MATERIAL",
+      "rarity": "COMMON",
+      "max_stack_size": 99,
+      "icon_path": "res://assets/icons/items/cloth.png",
+      "description": "用于制作轻甲",
+      "sell_price": 3,
+      "buy_price": 0
+    },
+    {
+      "id": "magic_crystal",
+      "item_name": "魔法水晶",
+      "item_type": "MATERIAL",
+      "rarity": "RARE",
+      "max_stack_size": 50,
+      "icon_path": "res://assets/icons/items/magic_crystal.png",
+      "description": "蕴含魔力的水晶",
+      "sell_price": 75,
+      "buy_price": 0
+    },
+    {
+      "id": "dragon_scale",
+      "item_name": "龙鳞",
+      "item_type": "MATERIAL",
+      "rarity": "LEGENDARY",
+      "max_stack_size": 10,
+      "icon_path": "res://assets/icons/items/dragon_scale.png",
+      "description": "来自远古巨龙的鳞片",
+      "sell_price": 1000,
+      "buy_price": 0
+    },
+    {
+      "id": "gold_coin",
+      "item_name": "金币",
+      "item_type": "CURRENCY",
+      "rarity": "COMMON",
+      "max_stack_size": 9999,
+      "icon_path": "res://assets/icons/items/gold_coin.png",
+      "description": "通用货币",
+      "sell_price": 1,
+      "buy_price": 0
+    },
+    {
+      "id": "quest_letter",
+      "item_name": "神秘信件",
+      "item_type": "QUEST",
+      "rarity": "UNCOMMON",
+      "max_stack_size": 1,
+      "icon_path": "res://assets/icons/items/quest_letter.png",
+      "description": "一封密封的信件，上面有神秘的印记",
+      "sell_price": 0,
+      "buy_price": 0
+    },
+    {
+      "id": "ancient_key",
+      "item_name": "古老钥匙",
+      "item_type": "QUEST",
+      "rarity": "RARE",
+      "max_stack_size": 1,
+      "icon_path": "res://assets/icons/items/ancient_key.png",
+      "description": "一把古老的钥匙，似乎能打开某个重要的地方",
+      "sell_price": 0,
+      "buy_price": 0
+    }
+  ]
+}

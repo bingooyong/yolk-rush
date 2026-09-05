@@ -1,0 +1,117 @@
+{
+  "ai_presets": {
+    "melee_aggressive": {
+      "name": "近战激进型",
+      "description": "近距离高攻击性AI",
+      "attack_range": 2.0,
+      "attack_cooldown": 1.0,
+      "move_speed": 4.0,
+      "chase_distance": 15.0,
+      "skill_usage_chance": 0.4,
+      "flee_health_threshold": 0.1,
+      "sight_range": 12.0,
+      "sight_angle": 140.0,
+      "hearing_range": 8.0
+    },
+    "melee_defensive": {
+      "name": "近战防御型",
+      "description": "近距离防御性AI",
+      "attack_range": 2.5,
+      "attack_cooldown": 1.8,
+      "move_speed": 2.5,
+      "chase_distance": 10.0,
+      "skill_usage_chance": 0.2,
+      "flee_health_threshold": 0.3,
+      "sight_range": 15.0,
+      "sight_angle": 120.0,
+      "hearing_range": 10.0
+    },
+    "ranged_sniper": {
+      "name": "远程狙击型",
+      "description": "远距离精准攻击AI",
+      "attack_range": 8.0,
+      "attack_cooldown": 2.5,
+      "move_speed": 2.0,
+      "chase_distance": 20.0,
+      "skill_usage_chance": 0.6,
+      "flee_health_threshold": 0.4,
+      "sight_range": 25.0,
+      "sight_angle": 90.0,
+      "hearing_range": 12.0
+    },
+    "ranged_support": {
+      "name": "远程支援型",
+      "description": "远距离辅助型AI",
+      "attack_range": 6.0,
+      "attack_cooldown": 2.0,
+      "move_speed": 3.0,
+      "chase_distance": 18.0,
+      "skill_usage_chance": 0.5,
+      "flee_health_threshold": 0.5,
+      "sight_range": 20.0,
+      "sight_angle": 110.0,
+      "hearing_range": 15.0
+    },
+    "tank": {
+      "name": "坦克型",
+      "description": "高血量低伤害吸引仇恨AI",
+      "attack_range": 2.5,
+      "attack_cooldown": 2.0,
+      "move_speed": 2.0,
+      "chase_distance": 12.0,
+      "skill_usage_chance": 0.3,
+      "flee_health_threshold": 0.05,
+      "sight_range": 18.0,
+      "sight_angle": 160.0,
+      "hearing_range": 12.0
+    },
+    "assassin": {
+      "name": "刺客型",
+      "description": "高爆发高机动性AI",
+      "attack_range": 1.5,
+      "attack_cooldown": 0.8,
+      "move_speed": 5.0,
+      "chase_distance": 20.0,
+      "skill_usage_chance": 0.7,
+      "flee_health_threshold": 0.25,
+      "sight_range": 15.0,
+      "sight_angle": 130.0,
+      "hearing_range": 10.0
+    },
+    "boss": {
+      "name": "Boss型",
+      "description": "高难度Boss AI",
+      "attack_range": 3.0,
+      "attack_cooldown": 1.2,
+      "move_speed": 3.5,
+      "chase_distance": 25.0,
+      "skill_usage_chance": 0.8,
+      "flee_health_threshold": 0.0,
+      "sight_range": 30.0,
+      "sight_angle": 180.0,
+      "hearing_range": 20.0
+    }
+  },
+  "behavior_modifiers": {
+    "coward": {
+      "name": "胆小",
+      "flee_health_threshold_modifier": 0.3,
+      "move_speed_modifier": 1.2
+    },
+    "brave": {
+      "name": "勇敢",
+      "flee_health_threshold_modifier": -0.2,
+      "attack_cooldown_modifier": 0.9
+    },
+    "cautious": {
+      "name": "谨慎",
+      "sight_range_modifier": 1.3,
+      "skill_usage_chance_modifier": -0.1
+    },
+    "reckless": {
+      "name": "鲁莽",
+      "attack_cooldown_modifier": 0.8,
+      "skill_usage_chance_modifier": 0.2
+    }
+  }
+}

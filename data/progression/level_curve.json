@@ -1,0 +1,247 @@
+{
+  "1": {
+    "required_exp": 100,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "2": {
+    "required_exp": 282,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "3": {
+    "required_exp": 519,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "4": {
+    "required_exp": 800,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "5": {
+    "required_exp": 1118,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "6": {
+    "required_exp": 1470,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "7": {
+    "required_exp": 1850,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "8": {
+    "required_exp": 2263,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "9": {
+    "required_exp": 2702,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "10": {
+    "required_exp": 3162,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "11": {
+    "required_exp": 3651,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "12": {
+    "required_exp": 4157,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "13": {
+    "required_exp": 4690,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "14": {
+    "required_exp": 5244,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "15": {
+    "required_exp": 5809,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "16": {
+    "required_exp": 6400,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "17": {
+    "required_exp": 7007,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "18": {
+    "required_exp": 7631,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "19": {
+    "required_exp": 8273,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "20": {
+    "required_exp": 8944,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "21": {
+    "required_exp": 9626,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "22": {
+    "required_exp": 10328,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "23": {
+    "required_exp": 11051,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "24": {
+    "required_exp": 11791,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "25": {
+    "required_exp": 12545,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "26": {
+    "required_exp": 13318,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "27": {
+    "required_exp": 14107,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "28": {
+    "required_exp": 14907,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "29": {
+    "required_exp": 15724,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "30": {
+    "required_exp": 16431,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "31": {
+    "required_exp": 17280,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "32": {
+    "required_exp": 18102,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "33": {
+    "required_exp": 18938,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "34": {
+    "required_exp": 19787,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "35": {
+    "required_exp": 20656,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "36": {
+    "required_exp": 21540,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "37": {
+    "required_exp": 22439,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "38": {
+    "required_exp": 23352,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "39": {
+    "required_exp": 24278,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "40": {
+    "required_exp": 25298,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "41": {
+    "required_exp": 26252,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "42": {
+    "required_exp": 27217,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "43": {
+    "required_exp": 28195,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "44": {
+    "required_exp": 29185,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "45": {
+    "required_exp": 30186,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "46": {
+    "required_exp": 31199,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "47": {
+    "required_exp": 32224,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "48": {
+    "required_exp": 33260,
+    "stat_points": 5,
+    "skill_points": 1
+  },
+  "49": {
+    "required_exp": 34279,
+    "stat_points": 5,
+    "skill_points": 1
+  }
+}

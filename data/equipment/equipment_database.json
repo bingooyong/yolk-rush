@@ -1,0 +1,261 @@
+{
+  "weapons": [
+    {
+      "id": "sword_iron",
+      "name": "铁剑",
+      "type": "main_hand",
+      "rarity": "common",
+      "level_requirement": 1,
+      "stats": {
+        "physical_damage": 10
+      },
+      "icon": "res://assets/icons/weapons/sword_iron.png"
+    },
+    {
+      "id": "sword_steel",
+      "name": "钢剑",
+      "type": "main_hand",
+      "rarity": "uncommon",
+      "level_requirement": 5,
+      "stats": {
+        "physical_damage": 25,
+        "crit_chance": 0.05
+      },
+      "icon": "res://assets/icons/weapons/sword_steel.png"
+    },
+    {
+      "id": "sword_flame",
+      "name": "烈焰之刃",
+      "type": "main_hand",
+      "rarity": "rare",
+      "level_requirement": 10,
+      "stats": {
+        "physical_damage": 45,
+        "skill_damage": 20,
+        "crit_chance": 0.08
+      },
+      "icon": "res://assets/icons/weapons/sword_flame.png"
+    },
+    {
+      "id": "sword_dragon",
+      "name": "屠龙剑",
+      "type": "main_hand",
+      "rarity": "epic",
+      "level_requirement": 20,
+      "stats": {
+        "physical_damage": 80,
+        "skill_damage": 40,
+        "crit_chance": 0.12,
+        "crit_damage": 0.25
+      },
+      "icon": "res://assets/icons/weapons/sword_dragon.png"
+    },
+    {
+      "id": "sword_legend",
+      "name": "传说圣剑",
+      "type": "main_hand",
+      "rarity": "legendary",
+      "level_requirement": 30,
+      "stats": {
+        "physical_damage": 150,
+        "skill_damage": 80,
+        "crit_chance": 0.20,
+        "crit_damage": 0.50,
+        "attack_speed": 0.15
+      },
+      "icon": "res://assets/icons/weapons/sword_legend.png"
+    }
+  ],
+  "armors": [
+    {
+      "id": "helmet_leather",
+      "name": "皮革头盔",
+      "type": "helmet",
+      "rarity": "common",
+      "level_requirement": 1,
+      "stats": {
+        "defense": 5,
+        "max_health": 20
+      },
+      "icon": "res://assets/icons/armor/helmet_leather.png"
+    },
+    {
+      "id": "helmet_chain",
+      "name": "锁链头盔",
+      "type": "helmet",
+      "rarity": "uncommon",
+      "level_requirement": 5,
+      "stats": {
+        "defense": 12,
+        "max_health": 50,
+        "evasion": 0.03
+      },
+      "icon": "res://assets/icons/armor/helmet_chain.png"
+    },
+    {
+      "id": "helmet_plate",
+      "name": "板甲头盔",
+      "type": "helmet",
+      "rarity": "rare",
+      "level_requirement": 10,
+      "stats": {
+        "defense": 25,
+        "max_health": 100,
+        "evasion": 0.05
+      },
+      "icon": "res://assets/icons/armor/helmet_plate.png"
+    },
+    {
+      "id": "chest_leather",
+      "name": "皮革胸甲",
+      "type": "chest",
+      "rarity": "common",
+      "level_requirement": 1,
+      "stats": {
+        "defense": 10,
+        "max_health": 30
+      },
+      "icon": "res://assets/icons/armor/chest_leather.png"
+    },
+    {
+      "id": "chest_chain",
+      "name": "锁链胸甲",
+      "type": "chest",
+      "rarity": "uncommon",
+      "level_requirement": 5,
+      "stats": {
+        "defense": 25,
+        "max_health": 80,
+        "evasion": 0.05
+      },
+      "icon": "res://assets/icons/armor/chest_chain.png"
+    },
+    {
+      "id": "chest_plate",
+      "name": "板甲胸甲",
+      "type": "chest",
+      "rarity": "rare",
+      "level_requirement": 10,
+      "stats": {
+        "defense": 50,
+        "max_health": 150,
+        "evasion": 0.08
+      },
+      "icon": "res://assets/icons/armor/chest_plate.png"
+    },
+    {
+      "id": "gloves_leather",
+      "name": "皮革手套",
+      "type": "gloves",
+      "rarity": "common",
+      "level_requirement": 1,
+      "stats": {
+        "defense": 3,
+        "attack_speed": 0.03
+      },
+      "icon": "res://assets/icons/armor/gloves_leather.png"
+    },
+    {
+      "id": "gloves_swift",
+      "name": "迅捷手套",
+      "type": "gloves",
+      "rarity": "uncommon",
+      "level_requirement": 5,
+      "stats": {
+        "defense": 8,
+        "attack_speed": 0.08,
+        "crit_chance": 0.03
+      },
+      "icon": "res://assets/icons/armor/gloves_swift.png"
+    },
+    {
+      "id": "boots_leather",
+      "name": "皮革靴子",
+      "type": "boots",
+      "rarity": "common",
+      "level_requirement": 1,
+      "stats": {
+        "defense": 3,
+        "move_speed": 0.05
+      },
+      "icon": "res://assets/icons/armor/boots_leather.png"
+    },
+    {
+      "id": "boots_wind",
+      "name": "疾风之靴",
+      "type": "boots",
+      "rarity": "uncommon",
+      "level_requirement": 5,
+      "stats": {
+        "defense": 8,
+        "move_speed": 0.12,
+        "evasion": 0.05
+      },
+      "icon": "res://assets/icons/armor/boots_wind.png"
+    }
+  ],
+  "accessories": [
+    {
+      "id": "ring_power",
+      "name": "力量戒指",
+      "type": "ring",
+      "rarity": "uncommon",
+      "level_requirement": 3,
+      "stats": {
+        "physical_damage": 15,
+        "max_health": 30
+      },
+      "icon": "res://assets/icons/accessories/ring_power.png"
+    },
+    {
+      "id": "ring_agility",
+      "name": "敏捷戒指",
+      "type": "ring",
+      "rarity": "uncommon",
+      "level_requirement": 3,
+      "stats": {
+        "attack_speed": 0.10,
+        "crit_chance": 0.05
+      },
+      "icon": "res://assets/icons/accessories/ring_agility.png"
+    },
+    {
+      "id": "ring_vitality",
+      "name": "生命戒指",
+      "type": "ring",
+      "rarity": "rare",
+      "level_requirement": 8,
+      "stats": {
+        "max_health": 120,
+        "defense": 15
+      },
+      "icon": "res://assets/icons/accessories/ring_vitality.png"
+    },
+    {
+      "id": "necklace_warrior",
+      "name": "战士项链",
+      "type": "necklace",
+      "rarity": "rare",
+      "level_requirement": 10,
+      "stats": {
+        "physical_damage": 30,
+        "crit_damage": 0.20,
+        "max_health": 80
+      },
+      "icon": "res://assets/icons/accessories/necklace_warrior.png"
+    },
+    {
+      "id": "necklace_sage",
+      "name": "贤者项链",
+      "type": "necklace",
+      "rarity": "epic",
+      "level_requirement": 15,
+      "stats": {
+        "skill_damage": 50,
+        "max_health": 100,
+        "defense": 20
+      },
+      "icon": "res://assets/icons/accessories/necklace_sage.png"
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "version": 1,
+  "description": "游戏成就系统配置",
+
+  "achievements": [
+    {
+      "id": "first_steps",
+      "name": "初来乍到",
+      "description": "完成新手训练场",
+      "icon": "🎓",
+      "type": "level_complete",
+      "tier": "bronze",
+      "points": 10,
+      "requirements": {
+        "level_id": 0,
+        "completed": true
+      },
+      "rewards": {
+        "coins": 100
+      }
+    },
+    {
+      "id": "speed_demon",
+      "name": "速度恶魔",
+      "description": "在180秒内完成障碍竞速",
+      "icon": "⚡",
+      "type": "level_time",
+      "tier": "silver",
+      "points": 25,
+      "requirements": {
+        "level_id": 1,
+        "time_limit": 180
+      },
+      "rewards": {
+        "coins": 300
+      }
+    },
+    {
+      "id": "boss_slayer",
+      "name": "Boss杀手",
+      "description": "击败终极挑战Boss",
+      "icon": "👹",
+      "type": "level_complete",
+      "tier": "gold",
+      "points": 50,
+      "requirements": {
+        "level_id": 2,
+        "completed": true
+      },
+      "rewards": {
+        "coins": 500
+      }
+    },
+    {
+      "id": "perfectionist",
+      "name": "完美主义者",
+      "description": "无伤完成任意关卡",
+      "icon": "💎",
+      "type": "level_no_damage",
+      "tier": "gold",
+      "points": 50,
+      "requirements": {
+        "damage_taken": 0
+      },
+      "rewards": {
+        "coins": 500
+      }
+    },
+    {
+      "id": "coin_collector",
+      "name": "金币收藏家",
+      "description": "累计收集1000个金币",
+      "icon": "💰",
+      "type": "cumulative",
+      "tier": "silver",
+      "points": 30,
+      "requirements": {
+        "total_coins_collected": 1000
+      },
+      "rewards": {
+        "coins": 200
+      }
+    },
+    {
+      "id": "enemy_slayer",
+      "name": "敌人终结者",
+      "description": "累计击败100个敌人",
+      "icon": "⚔️",
+      "type": "cumulative",
+      "tier": "silver",
+      "points": 30,
+      "requirements": {
+        "total_enemies_defeated": 100
+      },
+      "rewards": {
+        "coins": 200
+      }
+    },
+    {
+      "id": "three_star_master",
+      "name": "三星大师",
+      "description": "获得所有关卡的三星评价",
+      "icon": "⭐",
+      "type": "stars",
+      "tier": "platinum",
+      "points": 100,
+      "requirements": {
+        "all_levels_three_stars": true
+      },
+      "rewards": {
+        "coins": 1000
+      }
+    },
+    {
+      "id": "survivor",
+      "name": "生存专家",
+      "description": "连续完成3个关卡不死亡",
+      "icon": "🛡️",
+      "type": "streak",
+      "tier": "gold",
+      "points": 50,
+      "requirements": {
+        "consecutive_clears": 3,
+        "no_deaths": true
+      },
+      "rewards": {
+        "coins": 500
+      }
+    },
+    {
+      "id": "skill_master",
+      "name": "技能大师",
+      "description": "使用技能击败50个敌人",
+      "icon": "🔮",
+      "type": "cumulative",
+      "tier": "silver",
+      "points": 30,
+      "requirements": {
+        "skill_kills": 50
+      },
+      "rewards": {
+        "coins": 300
+      }
+    },
+    {
+      "id": "item_hoarder",
+      "name": "道具囤积者",
+      "description": "在单次游戏中收集10个道具",
+      "icon": "🎁",
+      "type": "single_game",
+      "tier": "bronze",
+      "points": 15,
+      "requirements": {
+        "items_in_one_game": 10
+      },
+      "rewards": {
+        "coins": 150
+      }
+    },
+    {
+      "id": "speed_runner",
+      "name": "极速通关",
+      "description": "在5分钟内完成任意关卡",
+      "icon": "🏃",
+      "type": "level_time",
+      "tier": "gold",
+      "points": 50,
+      "requirements": {
+        "time_limit": 300
+      },
+      "rewards": {
+        "coins": 500
+      }
+    },
+    {
+      "id": "completionist",
+      "name": "集大成者",
+      "description": "完成所有关卡",
+      "icon": "🏆",
+      "type": "all_levels",
+      "tier": "platinum",
+      "points": 100,
+      "requirements": {
+        "all_levels_completed": true
+      },
+      "rewards": {
+        "coins": 1000
+      }
+    }
+  ],
+
+  "tiers": {
+    "bronze": {
+      "name": "青铜",
+      "color": "#CD7F32",
+      "points_multiplier": 1.0
+    },
+    "silver": {
+      "name": "白银",
+      "color": "#C0C0C0",
+      "points_multiplier": 1.5
+    },
+    "gold": {
+      "name": "黄金",
+      "color": "#FFD700",
+      "points_multiplier": 2.0
+    },
+    "platinum": {
+      "name": "铂金",
+      "color": "#E5E4E2",
+      "points_multiplier": 3.0
+    }
+  },
+
+  "statistics": {
+    "total_play_time": 0,
+    "total_coins_collected": 0,
+    "total_enemies_defeated": 0,
+    "total_items_collected": 0,
+    "total_skills_used": 0,
+    "total_deaths": 0,
+    "levels_completed": 0,
+    "perfect_clears": 0,
+    "three_star_clears": 0,
+    "consecutive_clears": 0,
+    "skill_kills": 0
+  }
+}

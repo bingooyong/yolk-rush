@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://health_potion_scene"]
+
+[ext_resource type="Script" path="res://scripts/objects/health_potion.gd" id="1"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_potion"]
+radius = 0.4
+
+[node name="HealthPotion" type="Area3D"]
+script = ExtResource("1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_potion")

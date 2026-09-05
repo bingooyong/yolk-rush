@@ -1,0 +1,115 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvx8m3k4n5pqr"]
+
+[ext_resource type="Script" path="res://scripts/ui/inventory_panel.gd" id="1"]
+
+[node name="InventoryPanel" type="Panel"]
+custom_minimum_size = Vector2(800, 600)
+script = ExtResource("1")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "背包"
+
+[node name="CloseButton" type="Button" parent="VBox/Header"]
+layout_mode = 2
+text = "X"
+
+[node name="Controls" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="SortLabel" type="Label" parent="VBox/Controls"]
+layout_mode = 2
+text = "排序:"
+
+[node name="SortRarity" type="Button" parent="VBox/Controls"]
+layout_mode = 2
+text = "稀有度"
+
+[node name="SortType" type="Button" parent="VBox/Controls"]
+layout_mode = 2
+text = "类型"
+
+[node name="SortName" type="Button" parent="VBox/Controls"]
+layout_mode = 2
+text = "名称"
+
+[node name="SortQuantity" type="Button" parent="VBox/Controls"]
+layout_mode = 2
+text = "数量"
+
+[node name="UsageLabel" type="Label" parent="VBox/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "使用率: 0/48 (0%)"
+horizontal_alignment = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemGrid" type="GridContainer" parent="VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 8
+
+[node name="ItemInfo" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 10.0
+offset_top = 50.0
+offset_right = 310.0
+offset_bottom = 300.0
+grow_horizontal = 0
+
+[node name="VBox" type="VBoxContainer" parent="ItemInfo"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ItemName" type="Label" parent="ItemInfo/VBox"]
+layout_mode = 2
+text = "物品名称"
+
+[node name="ItemType" type="Label" parent="ItemInfo/VBox"]
+layout_mode = 2
+text = "类型 | 稀有度"
+
+[node name="Separator" type="HSeparator" parent="ItemInfo/VBox"]
+layout_mode = 2
+
+[node name="Description" type="Label" parent="ItemInfo/VBox"]
+layout_mode = 2
+text = "物品描述..."
+autowrap_mode = 3
+
+[node name="Separator2" type="HSeparator" parent="ItemInfo/VBox"]
+layout_mode = 2
+
+[node name="Price" type="Label" parent="ItemInfo/VBox"]
+layout_mode = 2
+text = "售价: 0"
+
+[node name="Quantity" type="Label" parent="ItemInfo/VBox"]
+layout_mode = 2
+text = "数量: 1"

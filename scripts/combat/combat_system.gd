@@ -1,186 +1,228 @@
-## Combat System
-## 管理角色的战斗行为：攻击、技能、连击等
-## 与 AnimationController 和 HealthComponent 协作
-class_name CombatSystem
 extends Node
+class_name CombatSystem
+## 战斗系统 - 处理伤害计算、暴击、战斗事件
 
-## 组件引用
-var animation_controller: AnimationController
-var health_component: HealthComponent
-var character: CharacterBody3D
+signal damage_dealt(attacker: Node, target: Node, damage: float, is_crit: bool)
+signal combat_started(attacker: Node, target: Node)
+signal combat_ended(attacker: Node, target: Node)
+signal entity_died(entity: Node, killer: Node)
 
-## 攻击配置
-@export var base_damage: float = 15.0
-@export var attack_range: float = 2.0
-@export var attack_cooldown: float = 0.5
-@export var combo_window: float = 0.8  # 连击窗口时间
+# 战斗参数
+const BASE_CRIT_CHANCE = 5.0  # 基础暴击率 5%
+const BASE_CRIT_DAMAGE = 150.0  # 基础暴击伤害 150%
+const DODGE_CHANCE_BASE = 5.0  # 基础闪避率 5%
 
-## 状态
-var can_attack: bool = true
-var attack_cooldown_timer: float = 0.0
-var combo_count: int = 0
-var combo_timer: float = 0.0
+# 伤害类型
+enum DamageType {
+	PHYSICAL,
+	MAGICAL,
+	TRUE  # 真实伤害（无视防御）
+}
 
-## HitBox 配置
-var hitbox_scene: PackedScene = null
-var active_hitbox: HitBox = null
+# 活跃战斗
+var active_combats: Dictionary = {}  # {attacker_id: {target: Node, time: float}}
 
-## 信号
-signal attack_started()
-signal attack_hit(target: Node)
-signal combo_increased(count: int)
-signal combat_state_changed(can_attack: bool)
+func _ready():
+	print("[CombatSystem] Initialized")
 
-func _ready() -> void:
-	_find_components()
-	_load_resources()
+## 计算伤害
+func calculate_damage(
+	attacker: Node,
+	target: Node,
+	base_damage: float,
+	damage_type: DamageType = DamageType.PHYSICAL,
+	can_crit: bool = true
+) -> Dictionary:
+	var result = {
+		"damage": base_damage,
+		"is_crit": false,
+		"is_dodged": false,
+		"damage_type": damage_type
+	}
 
-func _process(delta: float) -> void:
-	## 更新冷却时间
-	if attack_cooldown_timer > 0.0:
-		attack_cooldown_timer -= delta
-		if attack_cooldown_timer <= 0.0:
-			can_attack = true
-			combat_state_changed.emit(true)
+	# 获取攻击者属性
+	var attacker_stats = _get_entity_stats(attacker)
 
-	## 更新连击窗口
-	if combo_timer > 0.0:
-		combo_timer -= delta
-		if combo_timer <= 0.0:
-			reset_combo()
+	# 获取目标属性
+	var target_stats = _get_entity_stats(target)
 
-func _find_components() -> void:
-	## 查找父节点（角色）
-	character = get_parent() as CharacterBody3D
-	if not character:
-		push_error("CombatSystem: Parent must be CharacterBody3D")
+	# 检查闪避
+	if _check_dodge(attacker_stats, target_stats):
+		result.is_dodged = true
+		result.damage = 0
+		return result
+
+	# 应用属性加成
+	match damage_type:
+		DamageType.PHYSICAL:
+			# 物理伤害 = 基础伤害 + 物理攻击 - 物理防御
+			result.damage += attacker_stats.get("physical_damage", 0)
+			result.damage -= target_stats.get("physical_defense", 0)
+		DamageType.MAGICAL:
+			# 魔法伤害 = 基础伤害 + 魔法攻击 - 魔法防御
+			result.damage += attacker_stats.get("magical_damage", 0)
+			result.damage -= target_stats.get("magical_defense", 0)
+		DamageType.TRUE:
+			# 真实伤害无视防御
+			pass
+
+	# 检查暴击
+	if can_crit and _check_crit(attacker_stats):
+		result.is_crit = true
+		var crit_damage_multiplier = attacker_stats.get("crit_damage", BASE_CRIT_DAMAGE) / 100.0
+		result.damage *= crit_damage_multiplier
+
+	# 伤害不能为负
+	result.damage = max(1.0, result.damage)
+
+	return result
+
+## 应用伤害
+func apply_damage(attacker: Node, target: Node, damage_info: Dictionary):
+	if damage_info.is_dodged:
+		print("[CombatSystem] %s dodged attack from %s" % [target.name, attacker.name])
 		return
 
-	## 查找动画控制器
-	animation_controller = character.find_child("AnimationController", false, false) as AnimationController
-	if animation_controller:
-		animation_controller.animation_finished.connect(_on_animation_finished)
+	var damage = damage_info.damage
+	var is_crit = damage_info.is_crit
 
-	## 查找生命值组件
-	health_component = character.find_child("HealthComponent", false, false) as HealthComponent
-	if health_component:
-		health_component.died.connect(_on_died)
+	# 对目标造成伤害
+	if target.has_method("take_damage"):
+		target.take_damage(damage)
 
-func _load_resources() -> void:
-	## 这里可以加载 HitBox 预制场景
-	## 暂时先用代码创建
-	pass
+	# 发射信号
+	damage_dealt.emit(attacker, target, damage, is_crit)
 
-## 尝试攻击
-func try_attack() -> bool:
-	if not can_attack:
-		return false
+	# 记录战斗
+	_register_combat(attacker, target)
 
-	if health_component and health_component.is_dead:
-		return false
+	# 打印日志
+	var crit_text = " (CRIT!)" if is_crit else ""
+	print("[CombatSystem] %s dealt %.1f damage to %s%s" % [attacker.name, damage, target.name, crit_text])
 
-	## 执行攻击
-	perform_attack()
-	return true
+	# 检查目标是否死亡
+	if _is_entity_dead(target):
+		_on_entity_died(target, attacker)
 
-## 执行攻击
-func perform_attack() -> void:
-	## 触发动画
-	if animation_controller:
-		animation_controller.trigger_attack()
+## 检查暴击
+func _check_crit(stats: Dictionary) -> bool:
+	var crit_chance = stats.get("crit_chance", BASE_CRIT_CHANCE)
+	return randf() * 100.0 < crit_chance
 
-	## 进入冷却
-	can_attack = false
-	attack_cooldown_timer = attack_cooldown
-	combat_state_changed.emit(false)
+## 检查闪避
+func _check_dodge(attacker_stats: Dictionary, target_stats: Dictionary) -> bool:
+	var dodge_chance = target_stats.get("dodge_chance", DODGE_CHANCE_BASE)
+	var accuracy = attacker_stats.get("accuracy", 100.0)
 
-	## 增加连击计数
-	combo_count += 1
-	combo_timer = combo_window
-	combo_increased.emit(combo_count)
+	# 命中率影响闪避
+	var final_dodge = dodge_chance * (100.0 / accuracy)
 
-	## 创建 HitBox
-	create_hitbox()
+	return randf() * 100.0 < final_dodge
 
-	attack_started.emit()
+## 获取实体属性
+func _get_entity_stats(entity: Node) -> Dictionary:
+	if entity.has_method("get_player_stats"):
+		return entity.get_player_stats()
+	elif entity.has_method("get_stats"):
+		return entity.get_stats()
 
-## 创建攻击判定 HitBox
-func create_hitbox() -> void:
-	## 清理旧的 HitBox
-	if active_hitbox:
-		active_hitbox.queue_free()
+	# 默认属性
+	return {
+		"physical_damage": 0,
+		"magical_damage": 0,
+		"physical_defense": 0,
+		"magical_defense": 0,
+		"crit_chance": BASE_CRIT_CHANCE,
+		"crit_damage": BASE_CRIT_DAMAGE,
+		"dodge_chance": DODGE_CHANCE_BASE,
+		"accuracy": 100.0
+	}
 
-	## 创建新的 HitBox
-	active_hitbox = HitBox.new()
-	active_hitbox.damage = calculate_damage()
-	active_hitbox.knockback_force = 5.0
-	active_hitbox.hit_once = false
-	active_hitbox.lifetime = 0.3  # 攻击判定持续 0.3 秒
+## 检查实体是否死亡
+func _is_entity_dead(entity: Node) -> bool:
+	if entity.has_method("is_dead"):
+		return entity.is_dead()
 
-	## 添加碰撞形状
-	var collision_shape := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = Vector3(attack_range, 1.0, attack_range)
-	collision_shape.shape = shape
-	active_hitbox.add_child(collision_shape)
+	# 检查健康值
+	if "current_health" in entity:
+		return entity.current_health <= 0
 
-	## 设置位置（角色前方）
-	active_hitbox.position = character.global_position + character.global_transform.basis.z * (attack_range * 0.5)
+	return false
 
-	## 设置所有者
-	active_hitbox.set_owner_node(character)
-	active_hitbox.hit_target.connect(_on_hit_target)
+## 注册战斗
+func _register_combat(attacker: Node, target: Node):
+	var attacker_id = attacker.get_instance_id()
 
-	## 添加到场景
-	get_tree().root.add_child(active_hitbox)
+	if not active_combats.has(attacker_id):
+		combat_started.emit(attacker, target)
 
-## 计算伤害（基础伤害 + 连击加成）
-func calculate_damage() -> float:
-	var combo_multiplier := 1.0 + (combo_count - 1) * 0.2  # 每次连击增加 20% 伤害
-	return base_damage * combo_multiplier
+	active_combats[attacker_id] = {
+		"target": target,
+		"time": Time.get_ticks_msec() / 1000.0
+	}
 
-## 重置连击
-func reset_combo() -> void:
-	if combo_count > 0:
-		combo_count = 0
+## 实体死亡
+func _on_entity_died(entity: Node, killer: Node):
+	entity_died.emit(entity, killer)
 
-## 被击中时调用（从 HealthComponent 接收）
-func on_hit() -> void:
-	if animation_controller:
-		animation_controller.trigger_hit()
+	# 移除相关战斗记录
+	_clear_combat_for_entity(entity)
 
-	## 打断连击
-	reset_combo()
+	print("[CombatSystem] %s was killed by %s" % [entity.name, killer.name])
 
-	## 重置攻击状态
-	can_attack = false
-	attack_cooldown_timer = attack_cooldown * 0.5  # 受击后冷却时间减半
+## 清理实体的战斗记录
+func _clear_combat_for_entity(entity: Node):
+	var entity_id = entity.get_instance_id()
 
-## 动画完成回调
-func _on_animation_finished(anim_name: String) -> void:
-	if anim_name == "attack":
-		## 攻击动画结束，清理 HitBox
-		if active_hitbox:
-			active_hitbox.queue_free()
-			active_hitbox = null
+	# 移除该实体作为攻击者的记录
+	if active_combats.has(entity_id):
+		var combat = active_combats[entity_id]
+		combat_ended.emit(entity, combat.target)
+		active_combats.erase(entity_id)
 
-## 击中目标回调
-func _on_hit_target(target: Node) -> void:
-	attack_hit.emit(target)
-	print("Hit target: %s, Damage: %.1f, Combo: %d" % [target.name, calculate_damage(), combo_count])
+	# 移除该实体作为目标的记录
+	for attacker_id in active_combats.keys():
+		var combat = active_combats[attacker_id]
+		if combat.target == entity:
+			var attacker = instance_from_id(attacker_id)
+			if attacker:
+				combat_ended.emit(attacker, entity)
+			active_combats.erase(attacker_id)
 
-## 死亡回调
-func _on_died() -> void:
-	can_attack = false
-	reset_combo()
+## 获取活跃战斗数量
+func get_active_combat_count() -> int:
+	return active_combats.size()
 
-	if animation_controller:
-		animation_controller.trigger_death()
+## 检查是否在战斗中
+func is_in_combat(entity: Node) -> bool:
+	var entity_id = entity.get_instance_id()
 
-## 获取当前是否可以攻击
-func is_ready_to_attack() -> bool:
-	return can_attack and not (health_component and health_component.is_dead)
+	# 作为攻击者
+	if active_combats.has(entity_id):
+		return true
 
-## 获取连击数
-func get_combo_count() -> int:
-	return combo_count
+	# 作为目标
+	for combat in active_combats.values():
+		if combat.target == entity:
+			return true
+
+	return false
+
+## 清理超时的战斗记录
+func _process(delta):
+	var current_time = Time.get_ticks_msec() / 1000.0
+	var timeout = 10.0  # 10秒无交互视为战斗结束
+
+	var to_remove = []
+
+	for attacker_id in active_combats.keys():
+		var combat = active_combats[attacker_id]
+		if current_time - combat.time > timeout:
+			to_remove.append(attacker_id)
+
+	for attacker_id in to_remove:
+		var combat = active_combats[attacker_id]
+		var attacker = instance_from_id(attacker_id)
+		if attacker:
+			combat_ended.emit(attacker, combat.target)
+		active_combats.erase(attacker_id)

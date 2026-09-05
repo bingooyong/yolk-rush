@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://cq7n8m3k4pqrs"]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_ai.gd" id="1"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+radius = 0.4
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.8, 0.2, 0.2, 1.0)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.4
+height = 1.6
+
+[node name="Goblin" type="CharacterBody3D" groups=["enemy"]]
+script = ExtResource("1")
+enemy_type = "goblin"
+enemy_level = 1
+max_health = 50.0
+damage = 5.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_1")
+surface_material_override/0 = SubResource("StandardMaterial3D_1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_1")

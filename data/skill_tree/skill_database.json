@@ -1,0 +1,302 @@
+{
+  "trees": {
+    "combat": {
+      "name": "战斗",
+      "description": "提升物理战斗能力",
+      "skills": [
+        {
+          "id": "power_strike",
+          "skill_name": "强力打击",
+          "description": "增加物理伤害",
+          "icon_path": "res://assets/icons/skills/power_strike.png",
+          "max_level": 5,
+          "required_level": 1,
+          "required_skill_points": 1,
+          "prerequisites": [],
+          "effects": {
+            "physical_damage_bonus": 0.05
+          },
+          "tree_position": {"x": 0, "y": 0}
+        },
+        {
+          "id": "critical_strike",
+          "skill_name": "致命一击",
+          "description": "增加暴击率",
+          "icon_path": "res://assets/icons/skills/critical_strike.png",
+          "max_level": 5,
+          "required_level": 5,
+          "required_skill_points": 1,
+          "prerequisites": ["power_strike"],
+          "effects": {
+            "crit_chance": 0.02
+          },
+          "tree_position": {"x": 1, "y": 0}
+        },
+        {
+          "id": "critical_damage",
+          "skill_name": "暴击伤害",
+          "description": "增加暴击时的额外伤害",
+          "icon_path": "res://assets/icons/skills/critical_damage.png",
+          "max_level": 5,
+          "required_level": 10,
+          "required_skill_points": 1,
+          "prerequisites": ["critical_strike"],
+          "effects": {
+            "crit_damage": 0.1
+          },
+          "tree_position": {"x": 2, "y": 0}
+        },
+        {
+          "id": "attack_speed",
+          "skill_name": "攻击速度",
+          "description": "增加攻击速度",
+          "icon_path": "res://assets/icons/skills/attack_speed.png",
+          "max_level": 5,
+          "required_level": 1,
+          "required_skill_points": 1,
+          "prerequisites": [],
+          "effects": {
+            "attack_speed": 0.03
+          },
+          "tree_position": {"x": 0, "y": 1}
+        },
+        {
+          "id": "combo_master",
+          "skill_name": "连击大师",
+          "description": "连续攻击增加伤害",
+          "icon_path": "res://assets/icons/skills/combo_master.png",
+          "max_level": 5,
+          "required_level": 8,
+          "required_skill_points": 1,
+          "prerequisites": ["attack_speed"],
+          "effects": {
+            "physical_damage_bonus": 0.05
+          },
+          "tree_position": {"x": 1, "y": 1}
+        },
+        {
+          "id": "berserker",
+          "skill_name": "狂暴",
+          "description": "大幅增加所有伤害",
+          "icon_path": "res://assets/icons/skills/berserker.png",
+          "max_level": 5,
+          "required_level": 15,
+          "required_skill_points": 2,
+          "prerequisites": ["power_strike", "attack_speed"],
+          "effects": {
+            "physical_damage_bonus": 0.15
+          },
+          "tree_position": {"x": 1, "y": 2}
+        },
+        {
+          "id": "ultimate_strike",
+          "skill_name": "终极打击",
+          "description": "终极技能伤害大幅提升",
+          "icon_path": "res://assets/icons/skills/ultimate_strike.png",
+          "max_level": 3,
+          "required_level": 25,
+          "required_skill_points": 3,
+          "prerequisites": ["critical_damage", "berserker"],
+          "effects": {
+            "physical_damage_bonus": 0.5
+          },
+          "tree_position": {"x": 2, "y": 2}
+        }
+      ]
+    },
+    "defense": {
+      "name": "防御",
+      "description": "提升生存能力",
+      "skills": [
+        {
+          "id": "iron_wall",
+          "skill_name": "铁壁",
+          "description": "增加护甲值",
+          "icon_path": "res://assets/icons/skills/iron_wall.png",
+          "max_level": 5,
+          "required_level": 1,
+          "required_skill_points": 1,
+          "prerequisites": [],
+          "effects": {
+            "armor_bonus": 10
+          },
+          "tree_position": {"x": 0, "y": 0}
+        },
+        {
+          "id": "vitality",
+          "skill_name": "生命强化",
+          "description": "增加最大生命值",
+          "icon_path": "res://assets/icons/skills/vitality.png",
+          "max_level": 5,
+          "required_level": 1,
+          "required_skill_points": 1,
+          "prerequisites": [],
+          "effects": {
+            "max_health": 50
+          },
+          "tree_position": {"x": 0, "y": 1}
+        },
+        {
+          "id": "block",
+          "skill_name": "格挡",
+          "description": "增加格挡几率",
+          "icon_path": "res://assets/icons/skills/block.png",
+          "max_level": 5,
+          "required_level": 5,
+          "required_skill_points": 1,
+          "prerequisites": ["iron_wall"],
+          "effects": {
+            "block_chance": 0.05
+          },
+          "tree_position": {"x": 1, "y": 0}
+        },
+        {
+          "id": "counter_attack",
+          "skill_name": "反击",
+          "description": "格挡后反击造成伤害",
+          "icon_path": "res://assets/icons/skills/counter_attack.png",
+          "max_level": 5,
+          "required_level": 12,
+          "required_skill_points": 1,
+          "prerequisites": ["block"],
+          "effects": {
+            "physical_damage_bonus": 0.2
+          },
+          "tree_position": {"x": 2, "y": 0}
+        },
+        {
+          "id": "regeneration",
+          "skill_name": "生命回复",
+          "description": "每秒恢复生命",
+          "icon_path": "res://assets/icons/skills/regeneration.png",
+          "max_level": 5,
+          "required_level": 8,
+          "required_skill_points": 1,
+          "prerequisites": ["vitality"],
+          "effects": {
+            "health_regen": 2
+          },
+          "tree_position": {"x": 1, "y": 1}
+        },
+        {
+          "id": "unyielding",
+          "skill_name": "不屈",
+          "description": "低血量时大幅提升防御",
+          "icon_path": "res://assets/icons/skills/unyielding.png",
+          "max_level": 3,
+          "required_level": 20,
+          "required_skill_points": 3,
+          "prerequisites": ["counter_attack", "regeneration"],
+          "effects": {
+            "armor_bonus": 30
+          },
+          "tree_position": {"x": 2, "y": 1}
+        }
+      ]
+    },
+    "magic": {
+      "name": "魔法",
+      "description": "提升法术能力",
+      "skills": [
+        {
+          "id": "spell_power",
+          "skill_name": "法术强度",
+          "description": "增加技能伤害",
+          "icon_path": "res://assets/icons/skills/spell_power.png",
+          "max_level": 5,
+          "required_level": 1,
+          "required_skill_points": 1,
+          "prerequisites": [],
+          "effects": {
+            "skill_damage_bonus": 0.05
+          },
+          "tree_position": {"x": 0, "y": 0}
+        },
+        {
+          "id": "mana_mastery",
+          "skill_name": "法力精通",
+          "description": "增加最大法力值",
+          "icon_path": "res://assets/icons/skills/mana_mastery.png",
+          "max_level": 5,
+          "required_level": 1,
+          "required_skill_points": 1,
+          "prerequisites": [],
+          "effects": {
+            "max_mana": 30
+          },
+          "tree_position": {"x": 0, "y": 1}
+        },
+        {
+          "id": "spell_penetration",
+          "skill_name": "法术穿透",
+          "description": "无视敌人部分魔法抗性",
+          "icon_path": "res://assets/icons/skills/spell_penetration.png",
+          "max_level": 5,
+          "required_level": 6,
+          "required_skill_points": 1,
+          "prerequisites": ["spell_power"],
+          "effects": {
+            "spell_penetration": 0.03
+          },
+          "tree_position": {"x": 1, "y": 0}
+        },
+        {
+          "id": "mana_regen",
+          "skill_name": "法力恢复",
+          "description": "每秒恢复法力",
+          "icon_path": "res://assets/icons/skills/mana_regen.png",
+          "max_level": 5,
+          "required_level": 6,
+          "required_skill_points": 1,
+          "prerequisites": ["mana_mastery"],
+          "effects": {
+            "mana_regen": 2
+          },
+          "tree_position": {"x": 1, "y": 1}
+        },
+        {
+          "id": "elemental_control",
+          "skill_name": "元素掌控",
+          "description": "增加元素伤害",
+          "icon_path": "res://assets/icons/skills/elemental_control.png",
+          "max_level": 5,
+          "required_level": 12,
+          "required_skill_points": 1,
+          "prerequisites": ["spell_power"],
+          "effects": {
+            "elemental_damage": 0.1
+          },
+          "tree_position": {"x": 1, "y": -1}
+        },
+        {
+          "id": "spell_echo",
+          "skill_name": "法术回响",
+          "description": "技能有几率触发两次",
+          "icon_path": "res://assets/icons/skills/spell_echo.png",
+          "max_level": 3,
+          "required_level": 18,
+          "required_skill_points": 2,
+          "prerequisites": ["elemental_control"],
+          "effects": {
+            "skill_damage_bonus": 0.15
+          },
+          "tree_position": {"x": 2, "y": -1}
+        },
+        {
+          "id": "arcane_mastery",
+          "skill_name": "奥术精通",
+          "description": "大幅提升所有魔法效果",
+          "icon_path": "res://assets/icons/skills/arcane_mastery.png",
+          "max_level": 3,
+          "required_level": 25,
+          "required_skill_points": 3,
+          "prerequisites": ["spell_penetration", "spell_echo"],
+          "effects": {
+            "skill_damage_bonus": 0.25
+          },
+          "tree_position": {"x": 3, "y": 0}
+        }
+      ]
+    }
+  }
+}
