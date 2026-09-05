@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://yolkrush_snow_island"]
+
+[node name="SnowIsland" type="Node3D"]

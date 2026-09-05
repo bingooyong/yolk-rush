@@ -5,6 +5,7 @@ const CHAR_PATH := "res://data/characters/yolk_hero.json"
 const LEVEL_PATH := "res://data/levels/snow_island_01.json"
 const LIGHT_PATH := "res://data/contracts/lighting_profile.json"
 const STUDIO_SCENE := "res://scenes/studio/hero_studio.tscn"
+const MATCH_SCENE := "res://scenes/match/match.tscn"
 
 func _ready() -> void:
 	print("[App] Yolk Rush 4.7.2 factory boot")
@@ -20,3 +21,6 @@ func load_default_lighting() -> LightingProfile:
 
 func go_hero_studio() -> void:
 	get_tree().change_scene_to_file(STUDIO_SCENE)
+
+func go_match() -> void:
+	get_tree().change_scene_to_file(MATCH_SCENE)
