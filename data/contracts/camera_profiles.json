@@ -1,28 +1,64 @@
 {
-  "profiles": [
-    {
-      "id": "front",
-      "position": {"x": 0, "y": 1.2, "z": 3.5},
-      "look_at": {"x": 0, "y": 1.0, "z": 0},
-      "fov": 50
+  "id": "camera_profiles_v1",
+  "hero_lock": {
+    "three_quarter": {
+      "position": {
+        "x": 2.2,
+        "y": 1.55,
+        "z": 2.4
+      },
+      "look_at": {
+        "x": 0.0,
+        "y": 0.85,
+        "z": 0.0
+      },
+      "fov": 35.0
     },
-    {
-      "id": "back",
-      "position": {"x": 0, "y": 1.2, "z": -3.5},
-      "look_at": {"x": 0, "y": 1.0, "z": 0},
-      "fov": 50
+    "front": {
+      "position": {
+        "x": 0.0,
+        "y": 1.35,
+        "z": 3.2
+      },
+      "look_at": {
+        "x": 0.0,
+        "y": 0.85,
+        "z": 0.0
+      },
+      "fov": 32.0
     },
-    {
-      "id": "left",
-      "position": {"x": -3.5, "y": 1.2, "z": 0},
-      "look_at": {"x": 0, "y": 1.0, "z": 0},
-      "fov": 50
+    "side": {
+      "position": {
+        "x": 3.2,
+        "y": 1.25,
+        "z": 0.0
+      },
+      "look_at": {
+        "x": 0.0,
+        "y": 0.85,
+        "z": 0.0
+      },
+      "fov": 32.0
     },
-    {
-      "id": "right",
-      "position": {"x": 3.5, "y": 1.2, "z": 0},
-      "look_at": {"x": 0, "y": 1.0, "z": 0},
-      "fov": 50
+    "back": {
+      "position": {
+        "x": 0.0,
+        "y": 1.4,
+        "z": -3.2
+      },
+      "look_at": {
+        "x": 0.0,
+        "y": 0.85,
+        "z": 0.0
+      },
+      "fov": 32.0
     }
-  ]
+  },
+  "chase": {
+    "distance": 6.5,
+    "height": 2.8,
+    "look_at_height": 1.05,
+    "fov": 50.0,
+    "lag": 8.0
+  }
 }

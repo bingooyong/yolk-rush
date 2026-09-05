@@ -14,10 +14,19 @@ runtime + asset pipeline + AI agents. Yolk Rush is the first product.
 - Multiplayer: server-authoritative (later)
 - Target: iPhone / iPad via Xcode on a Mac
 
-## Why GitHub, not only Grok preview
+## Trellis (do this next)
 
-The in-chat preview can hibernate. GitHub is the durable copy.
-Clone this repo onto a Mac with Godot 4.7.2 when you are ready to export iOS.
+Planning lives in [`.trellis/`](.trellis/README.md).
+
+Current parent task: [`.trellis/tasks/09-04-factory-phase-1-3/`](.trellis/tasks/09-04-factory-phase-1-3/)
+
+| Order | Task | Artifact |
+|---|---|---|
+| 1 | Hero pipeline | `prd.md` + `design.md` + `implement.md` |
+| 2 | Snow Island golden scene | same |
+| 3 | Visual + Performance QA | same |
+
+Do not start Phase 2 until Phase 1 acceptance is green.
 
 ## Layout
 
@@ -30,6 +39,8 @@ data/levels/
 data/contracts/
 scenes/bootstrap/
 scripts/core/
+.trellis/spec/
+.trellis/tasks/
 ```
 
 ## Principles (non-negotiable)
@@ -45,21 +56,26 @@ scripts/core/
 9. Mobile change ⇒ Performance Benchmark
 10. No temp code in Runtime
 
-## Phase status
-
-| Phase | Status |
-|---|---|
-| 0 Factory foundation | specified |
-| 1 Yolk Hero v1 art lock | locked in preview |
-| 2 Snow Island Golden Scene | playable in preview |
-| 3 Visual / Performance QA | next |
-| iOS Xcode export | Mac only |
-
 ## iOS
 
-Godot iOS export requires **macOS + Xcode**. The Grok Linux preview cannot
-produce an IPA. Install Godot 4.7.2 on your Mac when you are ready to ship.
+Godot iOS export requires **macOS + Xcode**. Download Godot from
+[godotengine.org/download/macos](https://godotengine.org/download/macos/)
+(4.7.2 Universal, **not** the .NET build). The Godot Fund site is donations, not a paywall.
 
 ## License
 
 Original work. Do not copy characters, maps, UI, or audio from other games.
+
+## Docs
+
+架构约定与门禁（原则、分层、Asset Contract、Skill、Benchmark）：
+
+- [docs/architecture/README.md](docs/architecture/README.md) — 索引
+- [docs/architecture/ARCHITECTURE_PRINCIPLES.md](docs/architecture/ARCHITECTURE_PRINCIPLES.md) — 十条原则
+- [docs/architecture/RUNTIME_LAYERS.md](docs/architecture/RUNTIME_LAYERS.md)
+- [docs/architecture/ASSET_CONTRACT.md](docs/architecture/ASSET_CONTRACT.md)
+- [docs/architecture/SKILL_CONVENTION.md](docs/architecture/SKILL_CONVENTION.md)
+- [docs/architecture/BENCHMARKS.md](docs/architecture/BENCHMARKS.md)
+- [docs/skills/README.md](docs/skills/README.md) — Skill 索引（Phase 3 planned）
+
+角色契约 schema：`data/contracts/character_asset_contract.json`。

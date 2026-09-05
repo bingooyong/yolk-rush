@@ -1,189 +1,205 @@
-extends Node3D
-## Level Builder: 从 JSON 构建关卡几何和灯光
+class_name LevelBuilder
+extends RefCounted
+## Builds StaticBody / Area geometry from LevelDefinition. No mesh-derived collision.
 
-signal level_loaded(level_id: String)
+const THICKNESS := 1.0
+const ICE_FRICTION := 0.04
+const DEFAULT_FRICTION := 0.8
 
-var current_level_id: String = ""
-var segments: Array = []
-var spawn_point: Vector3 = Vector3.ZERO
+func build(def: LevelDefinition) -> Node3D:
+	var root := Node3D.new()
+	root.name = "World"
+	if def == null or not def.is_valid():
+		push_error("LevelBuilder: refuse to build without valid LevelDefinition")
+		return root
 
-func load_level(level_id: String) -> bool:
-	var level_path := "res://data/levels/%s.json" % level_id
-	if not FileAccess.file_exists(level_path):
-		push_error("[LevelBuilder] Level not found: %s" % level_path)
-		return false
+	var spawn_z := float(def.spawn.get("z", 0.0))
+	# Small rear pad so spawn sits on start_hall, not on the +Z lip.
+	var cursor_z := spawn_z + 2.0
+	var course_z_max := spawn_z
+	var course_z_min := spawn_z
+	var course_half_w := 0.0
+	var recovery_segs: Array = []
 
-	var file := FileAccess.open(level_path, FileAccess.READ)
-	var json := JSON.new()
-	var parse_result := json.parse(file.get_as_text())
-	file.close()
+	for i in def.segments.size():
+		var raw: Variant = def.segments[i]
+		if typeof(raw) != TYPE_DICTIONARY:
+			push_error("LevelBuilder: segments[%d] not object" % i)
+			continue
+		var seg: Dictionary = raw
+		var role := str(seg.get("role", ""))
+		if not LevelDefinition.ALLOWED_ROLES.has(role):
+			push_error("LevelBuilder: unknown role '%s' at segments[%d] — fail" % [role, i])
+			return root
 
-	if parse_result != OK:
-		push_error("[LevelBuilder] Failed to parse level JSON: %s" % level_path)
-		return false
+		if role == "recovery":
+			recovery_segs.append(seg)
+			continue
 
-	var level_data: Dictionary = json.data
-	current_level_id = level_id
+		var width := float(seg.get("width", 1.0))
+		var length := float(seg.get("length", 1.0))
+		var y_top := float(seg.get("y", 0.0))
+		var ice := bool(seg.get("ice", false))
+		var sid := str(seg.get("id", "seg_%d" % i))
 
-	_build_segments(level_data.get("segments", []))
+		# Lay along -Z from spawn so start_hall begins under spawn.
+		var center_z := cursor_z - length * 0.5
+		var center := Vector3(0.0, y_top - THICKNESS * 0.5, center_z)
 
-	# Load lighting profile from contract
-	var lighting_id = level_data.get("lighting", "")
-	var lighting_data: Dictionary = {}
-	if lighting_id is String and not lighting_id.is_empty():
-		lighting_data = _load_lighting_profile(lighting_id)
+		if role == "shortcut":
+			_add_shortcut(root, sid, width, length, y_top, ice, cursor_z)
+		else:
+			_add_box(root, sid, role, Vector3(width, THICKNESS, length), center, ice)
 
-	_setup_lighting(lighting_data)
-	_set_spawn_point(level_data.get("spawn", {}))
+		if role == "finish_hall":
+			_add_finish_area(root, sid, width, length, y_top, center_z)
 
-	# Phase 4.5: Add visual decorations
-	_add_decorations(level_data)
+		cursor_z -= length
+		course_z_max = maxf(course_z_max, center_z + length * 0.5)
+		course_z_min = minf(course_z_min, center_z - length * 0.5)
+		course_half_w = maxf(course_half_w, width * 0.5)
 
-	level_loaded.emit(level_id)
-	print("[LevelBuilder] Level loaded: %s" % level_id)
-	return true
+	for rec in recovery_segs:
+		_add_recovery(root, rec, course_z_min, course_z_max, course_half_w)
 
-func _build_segments(segments_data: Array) -> void:
-	segments.clear()
+	return root
 
-	for seg_data in segments_data:
-		var segment := _create_segment(seg_data)
-		segments.append(segment)
-		add_child(segment)
 
-func _load_lighting_profile(lighting_id: String) -> Dictionary:
-	var lighting_path := "res://data/contracts/lighting_profiles.json"
-	if not FileAccess.file_exists(lighting_path):
-		push_warning("[LevelBuilder] Lighting profiles not found: %s" % lighting_path)
-		return {}
+func _add_box(
+	parent: Node3D,
+	sid: String,
+	role: String,
+	size: Vector3,
+	center: Vector3,
+	ice: bool
+) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.name = "Seg_%s" % sid
+	body.position = center
+	body.set_meta("role", role)
+	body.set_meta("segment_id", sid)
+	if ice:
+		body.add_to_group("ice")
+		body.set_meta("ice", true)
+		var pmat := PhysicsMaterial.new()
+		pmat.friction = ICE_FRICTION
+		body.physics_material_override = pmat
+	else:
+		var pmat2 := PhysicsMaterial.new()
+		pmat2.friction = DEFAULT_FRICTION
+		body.physics_material_override = pmat2
 
-	var file := FileAccess.open(lighting_path, FileAccess.READ)
-	var json := JSON.new()
-	var parse_result := json.parse(file.get_as_text())
-	file.close()
+	var col := CollisionShape3D.new()
+	col.name = "Collision"
+	var box := BoxShape3D.new()
+	box.size = size
+	col.shape = box
+	body.add_child(col)
 
-	if parse_result != OK:
-		push_warning("[LevelBuilder] Failed to parse lighting profiles")
-		return {}
-
-	var profiles: Dictionary = json.data
-	return profiles.get(lighting_id, {})
-
-func _create_segment(data: Dictionary) -> Node3D:
-	var segment := Node3D.new()
-	segment.name = data.get("id", "segment")
-
-	var pos: Dictionary = data.get("position", {})
-	segment.position = Vector3(pos.get("x", 0), pos.get("y", 0), pos.get("z", 0))
-
-	var size: Dictionary = data.get("size", {"w": 10, "d": 10})
-	var mesh_inst := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(size.get("w", 10), 1.0, size.get("d", 10))
-	mesh_inst.mesh = box
-	mesh_inst.position.y = -0.5
-
-	# Snow material
+	var mi := MeshInstance3D.new()
+	mi.name = "Mesh"
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	mi.mesh = mesh
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.95, 0.95, 1.0)
 	mat.roughness = 0.85
-	mat.metallic = 0.0
-	mesh_inst.material_override = mat
+	if ice:
+		mat.albedo_color = Color(0.72, 0.88, 0.98)
+		mat.roughness = 0.15
+		mat.metallic = 0.05
+	elif role == "finish_hall":
+		mat.albedo_color = Color(0.55, 0.85, 0.55)
+	elif role == "start_hall":
+		mat.albedo_color = Color(0.9, 0.9, 0.95)
+	else:
+		mat.albedo_color = Color(0.86, 0.9, 0.94)
+	mi.material_override = mat
+	body.add_child(mi)
 
-	segment.add_child(mesh_inst)
+	parent.add_child(body)
+	return body
 
-	# Collision
-	var static_body := StaticBody3D.new()
-	var collision := CollisionShape3D.new()
-	var collision_box := BoxShape3D.new()
-	collision_box.size = Vector3(size.get("w", 10), 1.0, size.get("d", 10))
-	collision.shape = collision_box
-	collision.position.y = -0.5
-	static_body.add_child(collision)
-	segment.add_child(static_body)
 
-	return segment
+func _add_shortcut(
+	parent: Node3D,
+	sid: String,
+	width: float,
+	length: float,
+	y_top: float,
+	ice: bool,
+	cursor_z: float
+) -> void:
+	# Stepped / tilted boxes — no CSG.
+	var steps := 4
+	var step_len := length / float(steps)
+	# Approximate rise from previous top (~0) toward y_top across the run.
+	var y_start := maxf(0.0, y_top - 1.2)
+	for s in steps:
+		var t0 := float(s) / float(steps)
+		var t1 := float(s + 1) / float(steps)
+		var y0 := lerpf(y_start, y_top, t0)
+		var y1 := lerpf(y_start, y_top, t1)
+		var y_mid := (y0 + y1) * 0.5
+		var rise := absf(y1 - y0)
+		var thick := maxf(THICKNESS, rise + 0.35)
+		var z_edge := cursor_z - float(s) * step_len
+		var center_z := z_edge - step_len * 0.5
+		var center := Vector3(0.0, y_mid - thick * 0.5 + rise * 0.5, center_z)
+		# Slight pitch so the top faces along the slope (rotate around X).
+		var body := _add_box(
+			parent,
+			"%s_step%d" % [sid, s],
+			"shortcut",
+			Vector3(width, thick, step_len * 1.02),
+			center,
+			ice
+		)
+		var pitch := -atan2(y1 - y0, step_len)
+		body.rotation.x = pitch * 0.85
 
-func _setup_lighting(lighting_data: Dictionary) -> void:
-	if lighting_data.is_empty():
-		push_warning("[LevelBuilder] No lighting profile")
-		return
 
-	# Directional light (sun)
-	var dir_light := DirectionalLight3D.new()
-	var dir: Dictionary = lighting_data.get("directional", {})
-	dir_light.light_color = Color(
-		dir.get("color_r", 1.0),
-		dir.get("color_g", 0.95),
-		dir.get("color_b", 0.9)
-	)
-	dir_light.light_energy = dir.get("energy", 0.8)
+func _add_finish_area(
+	parent: Node3D,
+	sid: String,
+	width: float,
+	length: float,
+	y_top: float,
+	center_z: float
+) -> void:
+	var area := Area3D.new()
+	area.name = "Finish_%s" % sid
+	area.add_to_group("finish")
+	area.monitoring = true
+	area.monitorable = true
+	area.position = Vector3(0.0, y_top + 1.2, center_z)
+	var col := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(width * 0.9, 2.4, length * 0.85)
+	col.shape = box
+	area.add_child(col)
+	parent.add_child(area)
 
-	var rot: Dictionary = dir.get("rotation", {})
-	dir_light.rotation_degrees = Vector3(
-		rot.get("x", -45),
-		rot.get("y", 30),
-		rot.get("z", 0)
-	)
 
-	dir_light.shadow_enabled = true
-	add_child(dir_light)
-
-	# Ambient light via environment
-	var world_env := WorldEnvironment.new()
-	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.7, 0.8, 0.9)
-
-	var ambient: Dictionary = lighting_data.get("ambient", {})
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(
-		ambient.get("color_r", 0.8),
-		ambient.get("color_g", 0.85),
-		ambient.get("color_b", 1.0)
-	)
-	env.ambient_light_energy = ambient.get("energy", 0.4)
-
-	world_env.environment = env
-	add_child(world_env)
-
-func _set_spawn_point(spawn_data: Dictionary) -> void:
-	spawn_point = Vector3(
-		spawn_data.get("x", 0),
-		spawn_data.get("y", 2),
-		spawn_data.get("z", 0)
-	)
-
-func get_spawn_point() -> Vector3:
-	return spawn_point
-
-## Phase 4.5: Add visual decorations to the level
-func _add_decorations(level_data: Dictionary) -> void:
-	var LevelDecorator := preload("res://scripts/visual/level_decorator.gd")
-
-	# Calculate total area size from segments
-	var total_area := Vector2(50, 100)  # Default for snow_island
-
-	# Add decorations
-	print("[LevelBuilder] Adding visual decorations...")
-
-	# Snow piles (20-30)
-	LevelDecorator.spawn_snow_piles(self, 25, total_area)
-
-	# Rocks (10-15)
-	LevelDecorator.spawn_rocks(self, 12, total_area)
-
-	# Trees (5-10)
-	LevelDecorator.spawn_trees(self, 7, total_area)
-
-	# Icicles at edges (optional)
-	var icicle_positions: Array[Vector3] = [
-		Vector3(-20, 0, -40),
-		Vector3(20, 0, -40),
-		Vector3(-20, 0, 40),
-		Vector3(20, 0, 40)
-	]
-	LevelDecorator.spawn_icicles(self, icicle_positions)
-
-	print("[LevelBuilder] ✅ Decorations added!")
-
+func _add_recovery(
+	parent: Node3D,
+	seg: Dictionary,
+	course_z_min: float,
+	course_z_max: float,
+	course_half_w: float
+) -> void:
+	var sid := str(seg.get("id", "recovery"))
+	var width := float(seg.get("width", 30.0))
+	var length := float(seg.get("length", 48.0))
+	var y_top := float(seg.get("y", -3.4))
+	# Cover the built course; prefer JSON size, expand if course is longer.
+	var course_len := maxf(course_z_max - course_z_min, 1.0)
+	length = maxf(length, course_len + 8.0)
+	width = maxf(width, course_half_w * 2.0 + 8.0)
+	var center_z := (course_z_min + course_z_max) * 0.5
+	var center := Vector3(0.0, y_top - THICKNESS * 0.5, center_z)
+	var body := _add_box(parent, sid, "recovery", Vector3(width, THICKNESS, length), center, false)
+	body.add_to_group("recovery")
+	body.set_meta("recovery", true)
+	var mi := body.get_node_or_null("Mesh") as MeshInstance3D
+	if mi != null and mi.material_override is StandardMaterial3D:
+		(mi.material_override as StandardMaterial3D).albedo_color = Color(0.35, 0.42, 0.55)

@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "yolk-rush://contracts/character_asset_contract",
+  "title": "Yolk Rush Character Asset Contract",
+  "description": "Validates yolk_hero-style character Data entries before assets enter Runtime. Collision must stay separate from mesh. Anchored on data/characters/yolk_hero.json field shapes.",
+  "type": "object",
+  "required": [
+    "visual_model",
+    "skeleton",
+    "materials",
+    "collision_profile",
+    "contract"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Character id, e.g. yolk_hero."
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "visual_model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to glTF 2.0 / GLB asset (res:// or relative).",
+      "pattern": ".*\\.(glb|gltf)$"
+    },
+    "skeleton": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Skeleton convention id, e.g. humanoid_v1."
+    },
+    "scale": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "idle_animation": { "type": "string" },
+    "run_animation": { "type": "string" },
+    "jump_animation": { "type": "string" },
+    "airborne_animation": { "type": "string" },
+    "fall_animation": { "type": "string" },
+    "land_animation": { "type": "string" },
+    "roll_animation": { "type": "string" },
+    "dash_animation": { "type": "string" },
+    "pounce_animation": { "type": "string" },
+    "hit_animation": { "type": "string" },
+    "victory_animation": { "type": "string" },
+    "fail_animation": { "type": "string" },
+    "animations": {
+      "description": "Optional alternate form: list or name→clip map. yolk_hero uses per-action *_animation fields instead.",
+      "oneOf": [
+        { "type": "array", "items": { "type": "string" } },
+        {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      ]
+    },
+    "materials": {
+      "description": "Material slots. yolk_hero uses an array of {slot, library, roughness, metallic}.",
+      "oneOf": [
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["slot", "library"],
+            "properties": {
+              "slot": { "type": "string", "minLength": 1 },
+              "library": { "type": "string", "minLength": 1 },
+              "roughness": { "type": "number", "minimum": 0, "maximum": 1 },
+              "metallic": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "additionalProperties": true
+          }
+        },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": true
+        }
+      ]
+    },
+    "collision_profile": {
+      "type": "object",
+      "description": "Gameplay collision authority; must not be derived from mesh at import time.",
+      "required": ["height", "radius", "offset_y"],
+      "properties": {
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 3.0,
+          "description": "Capsule/body height in meters (yolk_hero: 1.48)."
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1.5,
+          "description": "Capsule radius in meters (yolk_hero: 0.34)."
+        },
+        "offset_y": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2.0,
+          "description": "Vertical offset from feet origin (yolk_hero: 0.74)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "contract": {
+      "type": "object",
+      "required": ["version", "height_m", "facing", "origin"],
+      "properties": {
+        "version": {
+          "type": ["string", "integer"],
+          "description": "Contract version for the character entry."
+        },
+        "height_m": {
+          "type": "number",
+          "minimum": 1.4,
+          "maximum": 1.7,
+          "description": "Visual character height in meters; must be in [1.40, 1.70]."
+        },
+        "facing": {
+          "type": "string",
+          "const": "-Z",
+          "description": "Must face -Z."
+        },
+        "origin": {
+          "type": "string",
+          "const": "feet",
+          "description": "Must use feet origin."
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "anyOf": [
+    { "required": ["idle_animation", "run_animation"] },
+    { "required": ["animations"] }
+  ],
+  "additionalProperties": true,
+  "examples": [
+    {
+      "id": "yolk_hero",
+      "display_name": "Yolk Hero",
+      "visual_model": "res://assets/characters/yolk_hero/yolk_hero.glb",
+      "skeleton": "humanoid_v1",
+      "scale": 1.0,
+      "idle_animation": "idle",
+      "run_animation": "run",
+      "jump_animation": "jump_start",
+      "airborne_animation": "airborne",
+      "fall_animation": "fall",
+      "land_animation": "land",
+      "roll_animation": "roll",
+      "dash_animation": "dash",
+      "pounce_animation": "pounce",
+      "hit_animation": "hit",
+      "victory_animation": "victory",
+      "fail_animation": "fail",
+      "materials": [
+        { "slot": "body", "library": "soft_plastic", "roughness": 0.42, "metallic": 0.0 },
+        { "slot": "scarf", "library": "cloth", "roughness": 0.86, "metallic": 0.0 },
+        { "slot": "boots", "library": "rubber", "roughness": 0.7, "metallic": 0.0 }
+      ],
+      "collision_profile": {
+        "height": 1.48,
+        "radius": 0.34,
+        "offset_y": 0.74
+      },
+      "contract": {
+        "version": "1.0.0",
+        "height_m": 1.46,
+        "facing": "-Z",
+        "origin": "feet"
+      }
+    }
+  ]
+}
