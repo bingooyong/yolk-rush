@@ -38,7 +38,7 @@ func _update_effects(delta: float) -> void:
 		remove_effect(effect)
 
 ## 添加效果
-func add_effect(effect: StatusEffect, caster: Node = null) -> bool:
+func add_effect(effect, caster: Node = null) -> bool:
 	if not effect:
 		return false
 
@@ -51,7 +51,7 @@ func add_effect(effect: StatusEffect, caster: Node = null) -> bool:
 		return _add_new_effect(effect, caster)
 
 ## 处理已存在的效果（堆叠逻辑）
-func _handle_existing_effect(existing: StatusEffect, new_effect) -> bool:
+func _handle_existing_effect(existing, new_effect) -> bool:
 	match new_effect.stack_mode:
 		"replace":
 			# 替换模式：移除旧的，添加新的
@@ -78,7 +78,7 @@ func _handle_existing_effect(existing: StatusEffect, new_effect) -> bool:
 	return false
 
 ## 添加新效果
-func _add_new_effect(effect: StatusEffect, caster: Node) -> bool:
+func _add_new_effect(effect, caster: Node) -> bool:
 	# 应用效果
 	effect.apply(entity, caster)
 
@@ -280,8 +280,6 @@ static func create_poison(damage_per_tick: float, duration: float, caster: Node 
 
 ## 创建燃烧效果
 static func create_burn(damage_per_tick: float, duration: float, caster: Node = null):
-	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
-	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
 	var effect = StatusEffectScript.new({
 		"id": "burn",
 		"name": "Burn",
@@ -297,7 +295,6 @@ static func create_burn(damage_per_tick: float, duration: float, caster: Node = 
 
 ## 创建生命恢复效果
 static func create_regeneration(heal_per_tick: float, duration: float, caster: Node = null) :
-	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
 	var effect = StatusEffectScript.new({
 		"id": "regeneration",
 		"name": "Regeneration",
@@ -313,7 +310,6 @@ static func create_regeneration(heal_per_tick: float, duration: float, caster: N
 
 ## 创建减速效果
 static func create_slow(slow_percentage: float, duration: float, caster: Node = null) :
-	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
 	var effect = StatusEffectScript.new({
 		"id": "slow",
 		"name": "Slow",
@@ -328,7 +324,6 @@ static func create_slow(slow_percentage: float, duration: float, caster: Node = 
 
 ## 创建眩晕效果
 static func create_stun(duration: float, caster: Node = null) :
-	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
 	var effect = StatusEffectScript.new({
 		"id": "stun",
 		"name": "Stun",
@@ -342,7 +337,6 @@ static func create_stun(duration: float, caster: Node = null) :
 
 ## 创建攻击力提升效果
 static func create_attack_boost(boost_percentage: float, duration: float, caster: Node = null) :
-	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
 	var effect = StatusEffectScript.new({
 		"id": "attack_boost",
 		"name": "Attack Boost",

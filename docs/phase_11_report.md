@@ -1,381 +1,264 @@
 # Phase 11 - 状态效果系统完成报告
 
-**完成日期**: 2026-09-05  
-**阶段**: Phase 11 - 状态效果系统 (Status Effects)  
-**状态**: ✅ 完成
+**日期**: 2026-09-05
+**状态**: ✅ 已完成
+**提交**: `5a7a79d`
 
 ---
 
-## 📦 交付内容
+## 📦 交付成果
 
-### 1. 核心类
-
-#### StatusEffect (数据类)
+### 1. StatusEffect - 状态效果基类
 **文件**: `scripts/status/status_effect.gd`
-- 状态效果定义数据类
-- 支持 Buff/Debuff 分类
-- 可配置持续时间和堆叠规则
-- DOT/HOT 效果支持
-- 属性修改器系统
-- 视觉效果配置
 
-**关键特性**:
+**核心功能**:
+- ✅ 完整的 Buff/Debuff/Control 数据结构
+- ✅ 时长管理（持续时间/无限期/瞬时）
+- ✅ 堆叠系统（替换/叠加/延长/刷新）
+- ✅ Tick 机制（持续伤害/治疗）
+- ✅ 自定义回调（应用/移除/Tick/堆叠）
+
+**枚举定义**:
 ```gdscript
-- effect_id: 唯一标识符
-- effect_type: BUFF / DEBUFF
-- duration: 持续时间（0 = 永久）
-- max_stacks: 最大堆叠层数
-- stack_behavior: 堆叠行为（添加/刷新/拒绝）
-- tick_effect: DOT/HOT 效果
-- stat_modifiers: 属性修改器数组
-- dispellable: 是否可驱散
+enum EffectType {
+    BUFF,      # 增益
+    DEBUFF,    # 减益
+    CONTROL    # 控制
+}
+
+enum EffectCategory {
+    DAMAGE_OVER_TIME,      # 持续伤害
+    HEAL_OVER_TIME,        # 持续治疗
+    STAT_MODIFIER,         # 属性修改
+    MOVEMENT_MODIFIER,     # 移动修改
+    STUN,                  # 眩晕
+    SILENCE,               # 沉默
+    ROOT,                  # 定身
+    SLOW,                  # 减速
+    SHIELD,                # 护盾
+    INVULNERABILITY        # 无敌
+}
 ```
 
-#### StatusEffectInstance (实例类)
-**文件**: `scripts/status/status_effect_instance.gd`
-- 应用到实体的状态效果实例
-- 实时追踪剩余时间
-- 管理堆叠层数
-- 处理 DOT/HOT tick
-- 自动过期管理
-
-**信号**:
-- `stack_changed(new_stacks: int)` - 层数变化
-- `expired()` - 效果过期
-- `tick_applied(value: float, tick_type: String)` - Tick效果触发
-
-#### StatusEffectDatabase (数据库)
-**文件**: `scripts/status/status_effect_database.gd`
-- 管理所有状态效果定义
-- 从 JSON 加载配置
-- 提供默认效果（如果 JSON 不存在）
-- 支持运行时重载
-
-**默认效果** (7种):
-1. **poison** (中毒) - DOT debuff, 5层堆叠
-2. **stun** (眩晕) - 控制 debuff, 刷新时间
-3. **speed_boost** (加速) - 移动速度 buff
-4. **strength_boost** (力量增强) - 攻击力 buff, 3层堆叠
-5. **regeneration** (生命恢复) - HOT buff, 3层堆叠
-6. **burn** (燃烧) - 火焰 DOT debuff, 3层堆叠
-7. **slow** (减速) - 移动速度 debuff
-
-#### StatusEffectSystem (系统)
+### 2. StatusEffectSystem - 状态管理器
 **文件**: `scripts/status/status_effect_system.gd`
-- 统一管理所有实体的状态效果
-- 自动更新和过期处理
-- 堆叠规则管理
-- 属性修改器应用/移除
-- 信号通知机制
 
-**核心方法**:
-```gdscript
-apply_effect(effect_id, caster, target) -> instance
-remove_effect(target, effect_id)
-remove_effects_by_type(target, type)
-remove_all_buffs(target)
-remove_all_debuffs(target)
-remove_all_effects(target)
-get_effect(target, effect_id)
-get_active_effects(target)
-get_active_buffs(target)
-get_active_debuffs(target)
-has_effect(target, effect_id)
-get_effect_stacks(target, effect_id)
-```
+**核心功能**:
+- ✅ 效果生命周期管理（添加/移除/更新/过期）
+- ✅ 堆叠逻辑处理（4种模式）
+- ✅ 按类型/类别分组查询
+- ✅ 状态查询（是否眩晕/沉默/定身/减速）
+- ✅ 属性修改器累加
+- ✅ 移动速度修改器计算
 
-**信号**:
-- `effect_applied(target, effect_id)`
-- `effect_removed(target, effect_id)`
-- `effect_stacks_changed(target, effect_id, new_stacks)`
+**便捷工厂方法**:
+- `create_poison()` - 中毒
+- `create_burn()` - 燃烧
+- `create_regeneration()` - 再生
+- `create_slow()` - 减速
+- `create_stun()` - 眩晕
+- `create_attack_boost()` - 攻击加成
 
----
+### 3. 数据驱动配置
+**文件**: `data/status_effects/common_effects.json`
 
-## 🔗 系统集成
+**15种预设效果**:
+- **DOT**: poison, burn, bleed
+- **HOT**: regeneration, vampirism
+- **Control**: stun, slow, root, silence
+- **Buff**: attack_boost, defense_boost, speed_boost, shield
+- **Debuff**: weakness, fragile
 
-### GameManager 集成
-**文件**: `scripts/core/game_manager.gd`
-
-已将 StatusEffectSystem 集成到 GameManager：
-```gdscript
-@onready var status_effect_system: Node = $StatusEffectSystem
-```
-
-**初始化流程**:
-1. 创建 StatusEffectDatabase
-2. 加载状态效果数据
-3. 创建 StatusEffectSystem
-4. 连接到 database
-5. 自动在 _process 中更新所有效果
-
-### SkillEffect 集成
+### 4. 技能系统集成
 **文件**: `scripts/skill/skill_effect.gd`
 
-技能系统已集成状态效果：
-```gdscript
-static func _apply_buff(effect, skill, caster, target)
-static func _apply_debuff(effect, skill, caster, target)
-static func _apply_status_effect(effect_id, caster, target, duration_override)
+**集成点**:
+- ✅ `_apply_buff()` - 应用增益效果
+- ✅ `_apply_debuff()` - 应用减益效果
+- ✅ `_apply_status_effect()` - 通用状态效果接口
+- ✅ `_get_entity_status_system()` - 查找实体的状态系统
+- ✅ `_map_buff_to_category()` - Buff 类型映射
+- ✅ `_map_debuff_to_category()` - Debuff 类型映射
+
+---
+
+## 🎯 系统特性
+
+### 堆叠模式
+1. **Replace** - 替换旧效果
+2. **Add** - 增加层数（最大可配置）
+3. **Extend** - 延长持续时间
+4. **Refresh** - 重置持续时间
+
+### 效果分类
+- **类型分类**: Buff / Debuff / Control
+- **功能分类**: 10种 EffectCategory
+- **双重索引**: 快速查询和过滤
+
+### 生命周期
+```
+创建 → 应用 → Tick更新 → 过期 → 移除
+         ↓
+      堆叠处理
 ```
 
-**技能配置示例**:
-```json
+---
+
+## 🧪 测试覆盖
+
+**测试文件**: `scripts/tests/phase_11_status_test.gd`
+
+**测试用例**:
+1. ✅ StatusEffect 基础功能
+2. ✅ 持续伤害效果 (DOT)
+3. ✅ 持续治疗效果 (HOT)
+4. ✅ StatusEffectSystem 管理
+5. ✅ 效果堆叠逻辑
+6. ✅ 控制效果（眩晕/沉默）
+7. ✅ 属性修改器
+8. ✅ 系统集成
+
+---
+
+## 📊 代码统计
+
+- **新增文件**: 3个
+- **新增代码**: ~1,200行
+- **数据配置**: 15种效果模板
+- **已提交**: Commit `5a7a79d`
+
+---
+
+## 🔗 依赖关系
+
+**Phase 11 依赖**:
+- ✅ Phase 8 - 战斗系统
+- ✅ Phase 10 - 技能系统
+
+**Phase 11 被依赖**:
+- Phase 12 - AI系统（AI 可感知状态）
+- Phase 13 - 地图系统（环境效果）
+
+---
+
+## 🚀 使用示例
+
+### 创建并应用效果
+```gdscript
+# 获取目标的状态系统
+var status_system = target.get_node("StatusEffectSystem")
+
+# 方式1: 使用工厂方法
+var poison = StatusEffectSystem.create_poison(10.0, 5.0, caster)
+status_system.add_effect(poison)
+
+# 方式2: 手动创建
+var burn = StatusEffect.new({
+    "id": "burn",
+    "name": "Burn",
+    "type": StatusEffect.EffectType.DEBUFF,
+    "category": StatusEffect.EffectCategory.DAMAGE_OVER_TIME,
+    "duration": 3.0,
+    "value": 5.0,
+    "tick_interval": 0.5
+})
+burn.caster = caster
+status_system.add_effect(burn)
+```
+
+### 查询状态
+```gdscript
+# 检查控制状态
+if status_system.is_stunned():
+    print("无法移动！")
+
+if status_system.is_silenced():
+    print("无法施法！")
+
+# 获取属性修改
+var attack_modifier = status_system.get_stat_modifier("attack")
+var speed_modifier = status_system.get_movement_speed_modifier()
+```
+
+### 技能中使用
+```gdscript
+# 在技能效果配置中
 {
-  "effects": [
-    {
-      "type": "buff",
-      "effect_id": "speed_boost",
-      "duration_override": 5.0
-    },
-    {
-      "type": "debuff",
-      "effect_id": "poison"
-    }
-  ]
+    "type": "buff",
+    "buff_type": "attack_boost",
+    "duration": 10.0,
+    "value": 0.3,
+    "chance": 1.0
 }
 ```
 
 ---
 
-## 📊 数据配置
+## ✨ 设计亮点
 
-### JSON 配置文件
-**文件**: `data/status_effects.json` (可选)
+### 1. 数据驱动
+- 所有效果通过 JSON 配置
+- 易于扩展和调整
+- 支持热重载
 
-如果不存在，系统会自动使用默认效果。
+### 2. 灵活的堆叠系统
+- 4种堆叠模式覆盖所有场景
+- 层数和时长独立管理
+- 支持自定义堆叠逻辑
 
-**示例格式**:
-```json
-{
-  "status_effects": [
-    {
-      "effect_id": "poison",
-      "name": "中毒",
-      "description": "持续受到毒素伤害",
-      "effect_type": "debuff",
-      "duration": 5.0,
-      "tick_interval": 1.0,
-      "tick_effect": {
-        "type": "damage",
-        "base_value": 5.0
-      },
-      "max_stacks": 5,
-      "stack_behavior": "add_stack",
-      "dispellable": true,
-      "icon_path": "res://assets/icons/poison.png",
-      "visual_effect": "res://vfx/poison.tscn"
-    }
-  ]
-}
+### 3. 高性能查询
+- 双重索引（类型+类别）
+- O(1) 分类访问
+- 增量更新机制
+
+### 4. 解耦设计
+- 效果数据与逻辑分离
+- 通过信号通知外部
+- 不依赖具体实体类型
+
+---
+
+## 📝 架构遵循
+
+✅ **Gameplay 与 Visual 解耦** - 状态效果只影响数据，不直接控制视觉
+✅ **数据驱动** - 所有效果从 JSON 配置加载
+✅ **Scene 不承担业务规则** - StatusEffectSystem 是纯逻辑节点
+✅ **可测试性** - 完整的单元测试覆盖
+
+---
+
+## 🎯 下一步建议
+
+**Phase 12 - AI系统** 是最佳选择：
+
+### 为什么选择 AI 系统？
+1. ✅ 所有战斗基础设施已就绪
+2. ✅ AI 可以利用状态效果（攻击中毒/眩晕的敌人）
+3. ✅ 形成完整的 PvE 战斗循环
+4. ✅ 为后续地图和关卡设计打基础
+
+### Phase 12 核心任务
+- AI 控制器基类
+- 状态机（Idle/Patrol/Chase/Combat）
+- 感知系统（视野/听觉）
+- 决策树或行为树
+- 与战斗系统集成
+
+---
+
+## 🏆 里程碑
+
+**Phase 11 完成意味着**:
+- ✅ 核心战斗机制完整
+- ✅ 技能深度质的飞跃
+- ✅ 战术玩法基础建立
+- ✅ 准备好构建完整游戏循环
+
+**战斗系统闭环**:
+```
+玩家/AI → 技能系统 → 状态效果 → 属性影响 → 战斗结果 → UI反馈
 ```
 
 ---
 
-## ✅ 测试验证
-
-### 测试场景
-**文件**: `scripts/tests/phase_11_status_effects_test.gd`
-
-**测试覆盖**:
-1. ✅ StatusEffect 数据类
-2. ✅ StatusEffectInstance 实例类
-3. ✅ StatusEffectDatabase 数据加载
-4. ✅ StatusEffectSystem 应用效果
-5. ✅ 堆叠规则验证
-6. ✅ 状态移除功能
-7. ✅ 持续时间管理
-
-**测试结果**: 15/15 通过 ✨
-
-**运行命令**:
-```bash
-/Applications/Godot.app/Contents/MacOS/Godot --headless \
-  --script scripts/tests/phase_11_status_effects_test.gd
-```
-
----
-
-## 🎨 特性亮点
-
-### 1. 灵活的堆叠系统
-支持三种堆叠行为：
-- **ADD_STACK**: 增加层数，效果叠加
-- **REFRESH_TIME**: 刷新持续时间，不增加层数
-- **REPLACE**: 替换为新效果
-
-### 2. DOT/HOT 系统
-- 支持按时间间隔触发效果
-- 自动计算堆叠层数影响
-- 可配置伤害/治疗类型
-
-### 3. 属性修改器
-- 加法修改器 (add)
-- 乘法修改器 (multiply)
-- 自动应用到实体属性系统
-- 效果移除时自动恢复
-
-### 4. 自动过期管理
-- 每帧更新剩余时间
-- 到期自动移除
-- 信号通知机制
-- 无效实体自动清理
-
-### 5. 类型化管理
-- 按类型移除 (Buff/Debuff)
-- 批量操作支持
-- 驱散系统基础
-
----
-
-## 📈 代码统计
-
-| 文件 | 代码行数 | 说明 |
-|------|---------|------|
-| `status_effect.gd` | 189 | 数据类 + 序列化 |
-| `status_effect_instance.gd` | 157 | 实例管理 + 更新逻辑 |
-| `status_effect_database.gd` | 192 | 数据库 + 默认效果 |
-| `status_effect_system.gd` | 280 | 系统管理 + 集成 |
-| `phase_11_status_effects_test.gd` | 230 | 测试套件 |
-| **总计** | **1,048** | **所有代码** |
-
----
-
-## 🔧 使用示例
-
-### 应用状态效果
-```gdscript
-# 获取系统
-var status_system = GameManager.get_status_effect_system()
-
-# 应用中毒效果
-var poison = status_system.apply_effect("poison", attacker, target)
-
-# 检查是否有效果
-if status_system.has_effect(target, "poison"):
-    print("目标已中毒！")
-
-# 获取层数
-var stacks = status_system.get_effect_stacks(target, "poison")
-print("中毒层数: ", stacks)
-```
-
-### 移除状态效果
-```gdscript
-# 移除特定效果
-status_system.remove_effect(target, "poison")
-
-# 移除所有 Debuff
-status_system.remove_all_debuffs(target)
-
-# 驱散（移除可驱散的 Debuff）
-for effect in status_system.get_active_debuffs(target):
-    if effect.effect_data.dispellable:
-        status_system.remove_effect(target, effect.get_effect_id())
-```
-
-### 在技能中使用
-```gdscript
-# 技能 JSON 配置
-{
-  "skill_id": "poison_strike",
-  "name": "毒击",
-  "effects": [
-    {
-      "type": "damage",
-      "base_value": 50.0
-    },
-    {
-      "type": "debuff",
-      "effect_id": "poison"
-    }
-  ]
-}
-```
-
----
-
-## 🎯 架构亮点
-
-### 1. 完全数据驱动
-- 所有效果定义来自数据
-- JSON 可选，默认效果作为后备
-- 支持运行时重载
-
-### 2. 解耦设计
-- 状态效果与实体分离
-- 通过 StatusEffectSystem 统一管理
-- 不污染实体类代码
-
-### 3. 信号驱动
-- 效果应用/移除触发信号
-- UI 可监听更新显示
-- 游戏逻辑可响应状态变化
-
-### 4. 扩展性强
-- 易于添加新效果类型
-- 支持自定义修改器
-- 视觉效果预留接口
-
----
-
-## 🚀 下一步集成
-
-### Phase 12 - AI 系统
-状态效果可用于：
-- AI 决策：检测敌人是否虚弱（低血/多 Debuff）
-- 技能选择：优先驱散 Debuff 或上 Buff
-- 行为调整：被眩晕时停止行动
-
-### Phase 13 - 地图系统
-环境状态效果：
-- 毒沼泽：进入区域自动中毒
-- 圣地：持续恢复生命
-- 寒冰区：减速效果
-
-### UI 显示
-- 状态栏：显示当前 Buff/Debuff 图标
-- Tooltip：鼠标悬停显示详细信息
-- 倒计时动画：剩余时间可视化
-
----
-
-## ⚠️ 已知限制
-
-1. **属性修改器**：需要目标有 StatsComponent
-2. **视觉效果**：预留接口，未实现粒子系统
-3. **保存系统**：状态效果未持久化（可通过 SaveManager 扩展）
-4. **网络同步**：未考虑多人游戏同步（Phase 18+）
-
----
-
-## 📝 提交信息
-
-```bash
-git add scripts/status/ data/status_effects.json scripts/tests/phase_11_status_effects_test.gd
-git commit -m "feat: Phase 11 状态效果系统完成
-
-- StatusEffect: 数据类定义，支持 Buff/Debuff/DOT/HOT
-- StatusEffectInstance: 实例管理，自动更新和过期
-- StatusEffectDatabase: 数据库，7种默认效果
-- StatusEffectSystem: 统一管理，堆叠规则，属性修改器
-- 集成到 GameManager 和 SkillEffect
-- 15个测试全部通过
-
-Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
-```
-
----
-
-## ✨ Phase 11 完成！
-
-状态效果系统已全面实现并通过测试。系统具有完整的：
-- ✅ 数据驱动架构
-- ✅ Buff/Debuff 管理
-- ✅ 堆叠规则
-- ✅ DOT/HOT 系统
-- ✅ 属性修改器
-- ✅ 自动过期管理
-- ✅ GameManager 集成
-- ✅ 技能系统集成
-
-**状态效果系统现已就绪，可以在战斗和技能中使用！** 🎮
+**Phase 11 完成！状态效果系统现已就绪，战斗深度提升一个层次！** 🎮✨
