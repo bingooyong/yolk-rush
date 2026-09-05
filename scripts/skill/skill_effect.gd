@@ -214,6 +214,55 @@ static func _get_status_effect_system() -> Node:
 
 	return null
 
+## 获取实体的状态效果系统
+static func _get_entity_status_system(entity: Node) -> Node:
+	# 直接查找子节点
+	if entity.has_node("StatusEffectSystem"):
+		return entity.get_node("StatusEffectSystem")
+
+	# 查找任意StatusEffectSystem子节点
+	for child in entity.get_children():
+		if child.name.contains("StatusEffect") or child.get_script() == load("res://scripts/status/status_effect_system.gd"):
+			return child
+
+	return null
+
+## 映射buff类型到状态效果分类
+static func _map_buff_to_category(buff_type: String) -> int:
+	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
+
+	match buff_type:
+		"attack_boost", "defense_boost", "speed_boost":
+			return StatusEffectScript.EffectCategory.STAT_MODIFIER
+		"regeneration":
+			return StatusEffectScript.EffectCategory.HEAL_OVER_TIME
+		"shield":
+			return StatusEffectScript.EffectCategory.SHIELD
+		"invulnerable":
+			return StatusEffectScript.EffectCategory.INVULNERABILITY
+		_:
+			return StatusEffectScript.EffectCategory.STAT_MODIFIER
+
+## 映射debuff类型到状态效果分类
+static func _map_debuff_to_category(debuff_type: String) -> int:
+	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
+
+	match debuff_type:
+		"poison", "burn", "bleed":
+			return StatusEffectScript.EffectCategory.DAMAGE_OVER_TIME
+		"slow":
+			return StatusEffectScript.EffectCategory.SLOW
+		"stun":
+			return StatusEffectScript.EffectCategory.STUN
+		"silence":
+			return StatusEffectScript.EffectCategory.SILENCE
+		"root":
+			return StatusEffectScript.EffectCategory.ROOT
+		"weakness":
+			return StatusEffectScript.EffectCategory.STAT_MODIFIER
+		_:
+			return StatusEffectScript.EffectCategory.STAT_MODIFIER
+
 ## 获取战斗UI
 static func _get_combat_ui() -> Node:
 	# 尝试从场景树获取CombatUI

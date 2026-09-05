@@ -1,28 +1,24 @@
 extends Node
-class_name StatusEffectDatabase
-## 状态效果数据库 - 管理所有状态效果定义
+## 状态效果数据库 - 加载和管理状态效果模板
 
-const StatusEffectClass = preload("res://scripts/status/status_effect.gd")
+# 预加载状态效果脚本
+const StatusEffectScript = preload("res://scripts/status/status_effect.gd")
 
-var effects: Dictionary = {}  # effect_id -> StatusEffect
+## 效果模板库
+var effect_templates: Dictionary = {}
+
+## 效果数据文件路径
+const EFFECT_DATA_PATH = "res://data/status_effects/common_effects.json"
 
 func _ready() -> void:
-	_load_effects()
-	print("[StatusEffectDatabase] Loaded %d status effects" % effects.size())
+	load_effect_templates()
+	print("[StatusEffectDatabase] Loaded %d effect templates" % effect_templates.size())
 
-## 从JSON加载状态效果
-func _load_effects() -> void:
-	var file_path = "res://data/status_effects.json"
-
-	if not FileAccess.file_exists(file_path):
-		push_warning("[StatusEffectDatabase] File not found: %s" % file_path)
-		_create_default_effects()
-		return
-
-	var file = FileAccess.open(file_path, FileAccess.READ)
+## 加载效果模板
+func load_effect_templates() -> void:
+	var file = FileAccess.open(EFFECT_DATA_PATH, FileAccess.READ)
 	if not file:
-		push_error("[StatusEffectDatabase] Failed to open: %s" % file_path)
-		_create_default_effects()
+		push_error("[StatusEffectDatabase] Failed to open: %s" % EFFECT_DATA_PATH)
 		return
 
 	var json_text = file.get_as_text()
@@ -32,149 +28,170 @@ func _load_effects() -> void:
 	var parse_result = json.parse(json_text)
 
 	if parse_result != OK:
-		push_error("[StatusEffectDatabase] JSON parse error at line %d: %s" % [json.get_error_line(), json.get_error_message()])
-		_create_default_effects()
+		push_error("[StatusEffectDatabase] Failed to parse JSON: %s" % EFFECT_DATA_PATH)
 		return
 
 	var data = json.get_data()
-
-	if not data is Dictionary or not data.has("status_effects"):
-		push_error("[StatusEffectDatabase] Invalid JSON structure")
-		_create_default_effects()
+	if not data.has("effects"):
+		push_error("[StatusEffectDatabase] No 'effects' array in data")
 		return
 
-	var effects_data = data["status_effects"]
-	for effect_data in effects_data:
-		var effect = StatusEffectClass.from_dict(effect_data)
-		effects[effect.effect_id] = effect
-		print("[StatusEffectDatabase] Loaded: %s" % effect.effect_id)
+	# 加载所有效果模板
+	for effect_data in data["effects"]:
+		var effect_id = effect_data.get("id", "")
+		if effect_id.is_empty():
+			continue
 
-## 创建默认效果（如果JSON不存在）
-func _create_default_effects() -> void:
-	print("[StatusEffectDatabase] Creating default effects...")
+		effect_templates[effect_id] = effect_data
 
-	# 中毒
-	var poison = StatusEffectClass.new()
-	poison.effect_id = "poison"
-	poison.name = "中毒"
-	poison.description = "持续受到毒素伤害"
-	poison.effect_type = StatusEffectClass.EffectType.DEBUFF
-	poison.duration = 5.0
-	poison.tick_interval = 1.0
-	poison.tick_effect = {"type": "damage", "base_value": 5.0}
-	poison.max_stacks = 5
-	poison.stack_behavior = StatusEffectClass.StackBehavior.ADD_STACK
-	poison.dispellable = true
-	effects["poison"] = poison
+## 创建效果实例
+func create_effect(effect_id: String, caster: Node = null) -> StatusEffectScript:
+	if not effect_templates.has(effect_id):
+		push_warning("[StatusEffectDatabase] Unknown effect: %s" % effect_id)
+		return null
 
-	# 眩晕
-	var stun = StatusEffectClass.new()
-	stun.effect_id = "stun"
-	stun.name = "眩晕"
-	stun.description = "无法移动或攻击"
-	stun.effect_type = StatusEffectClass.EffectType.DEBUFF
-	stun.duration = 2.0
-	stun.max_stacks = 1
-	stun.stack_behavior = StatusEffectClass.StackBehavior.REFRESH_TIME
-	stun.dispellable = true
-	effects["stun"] = stun
+	var template = effect_templates[effect_id]
+	var effect = StatusEffectScript.new(template)
+	effect.caster = caster
 
-	# 速度提升
-	var speed_boost = StatusEffectClass.new()
-	speed_boost.effect_id = "speed_boost"
-	speed_boost.name = "加速"
-	speed_boost.description = "移动速度大幅提升"
-	speed_boost.effect_type = StatusEffectClass.EffectType.BUFF
-	speed_boost.duration = 10.0
-	speed_boost.max_stacks = 1
-	speed_boost.stack_behavior = StatusEffectClass.StackBehavior.REFRESH_TIME
-	speed_boost.stat_modifiers = [
-		{"stat": "speed", "modifier_type": "multiply", "value": 1.5}
-	]
-	speed_boost.dispellable = true
-	effects["speed_boost"] = speed_boost
+	return effect
 
-	# 力量提升
-	var strength_boost = StatusEffectClass.new()
-	strength_boost.effect_id = "strength_boost"
-	strength_boost.name = "力量增强"
-	strength_boost.description = "攻击力提升"
-	strength_boost.effect_type = StatusEffectClass.EffectType.BUFF
-	strength_boost.duration = 15.0
-	strength_boost.max_stacks = 3
-	strength_boost.stack_behavior = StatusEffectClass.StackBehavior.ADD_STACK
-	strength_boost.stat_modifiers = [
-		{"stat": "attack", "modifier_type": "add", "value": 10.0}
-	]
-	strength_boost.dispellable = true
-	effects["strength_boost"] = strength_boost
+## 创建自定义效果（基于模板但修改参数）
+func create_custom_effect(effect_id: String, overrides: Dictionary, caster: Node = null) -> StatusEffectScript:
+	if not effect_templates.has(effect_id):
+		push_warning("[StatusEffectDatabase] Unknown effect: %s" % effect_id)
+		return null
 
-	# 持续治疗
-	var regeneration = StatusEffectClass.new()
-	regeneration.effect_id = "regeneration"
-	regeneration.name = "生命恢复"
-	regeneration.description = "持续恢复生命值"
-	regeneration.effect_type = StatusEffectClass.EffectType.BUFF
-	regeneration.duration = 10.0
-	regeneration.tick_interval = 1.0
-	regeneration.tick_effect = {"type": "heal", "base_value": 3.0}
-	regeneration.max_stacks = 3
-	regeneration.stack_behavior = StatusEffectClass.StackBehavior.ADD_STACK
-	regeneration.dispellable = true
-	effects["regeneration"] = regeneration
+	var template = effect_templates[effect_id].duplicate(true)
 
-	# 燃烧
-	var burn = StatusEffectClass.new()
-	burn.effect_id = "burn"
-	burn.name = "燃烧"
-	burn.description = "被火焰灼烧，持续受到伤害"
-	burn.effect_type = StatusEffectClass.EffectType.DEBUFF
-	burn.duration = 6.0
-	burn.tick_interval = 1.0
-	burn.tick_effect = {"type": "damage", "base_value": 8.0}
-	burn.max_stacks = 3
-	burn.stack_behavior = StatusEffectClass.StackBehavior.ADD_STACK
-	burn.dispellable = true
-	effects["burn"] = burn
+	# 应用覆盖参数
+	for key in overrides:
+		template[key] = overrides[key]
 
-	# 减速
-	var slow = StatusEffectClass.new()
-	slow.effect_id = "slow"
-	slow.name = "减速"
-	slow.description = "移动速度降低"
-	slow.effect_type = StatusEffectClass.EffectType.DEBUFF
-	slow.duration = 5.0
-	slow.max_stacks = 1
-	slow.stack_behavior = StatusEffectClass.StackBehavior.REFRESH_TIME
-	slow.stat_modifiers = [
-		{"stat": "speed", "modifier_type": "multiply", "value": 0.5}
-	]
-	slow.dispellable = true
-	effects["slow"] = slow
+	var effect = StatusEffectScript.new(template)
+	effect.caster = caster
 
-	print("[StatusEffectDatabase] Created %d default effects" % effects.size())
+	return effect
 
-## 获取状态效果
-func get_effect(effect_id: String):
-	if effects.has(effect_id):
-		return effects[effect_id]
+## 检查效果是否存在
+func has_effect(effect_id: String) -> bool:
+	return effect_templates.has(effect_id)
 
-	push_warning("[StatusEffectDatabase] Effect not found: %s" % effect_id)
-	return null
+## 获取效果模板数据
+func get_effect_template(effect_id: String) -> Dictionary:
+	if effect_templates.has(effect_id):
+		return effect_templates[effect_id].duplicate(true)
+	return {}
 
 ## 获取所有效果ID
 func get_all_effect_ids() -> Array:
-	return effects.keys()
+	return effect_templates.keys()
 
-## 按类型获取效果
+## 按类型获取效果ID
 func get_effects_by_type(effect_type: int) -> Array:
-	var result = []
-	for effect in effects.values():
-		if effect.effect_type == effect_type:
-			result.append(effect)
+	var result: Array = []
+	for effect_id in effect_templates:
+		var template = effect_templates[effect_id]
+		if template.get("type", -1) == effect_type:
+			result.append(effect_id)
 	return result
 
-## 重新加载
-func reload() -> void:
-	effects.clear()
-	_load_effects()
+## 按类别获取效果ID
+func get_effects_by_category(category: int) -> Array:
+	var result: Array = []
+	for effect_id in effect_templates:
+		var template = effect_templates[effect_id]
+		if template.get("category", -1) == category:
+			result.append(effect_id)
+	return result
+
+## 便捷方法 - 创建常见效果
+
+func create_poison(duration: float = 5.0, damage_per_tick: float = 5.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("poison", {
+		"duration": duration,
+		"value": damage_per_tick
+	}, caster)
+
+func create_burn(duration: float = 4.0, damage_per_tick: float = 8.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("burn", {
+		"duration": duration,
+		"value": damage_per_tick
+	}, caster)
+
+func create_bleed(duration: float = 6.0, damage_per_tick: float = 3.0, stacks: int = 1, caster: Node = null) -> StatusEffectScript:
+	var effect = create_custom_effect("bleed", {
+		"duration": duration,
+		"value": damage_per_tick
+	}, caster)
+	if effect:
+		effect.current_stacks = stacks
+	return effect
+
+func create_regeneration(duration: float = 10.0, heal_per_tick: float = 5.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("regeneration", {
+		"duration": duration,
+		"value": heal_per_tick
+	}, caster)
+
+func create_attack_boost(duration: float = 10.0, boost_percentage: float = 0.5, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("attack_boost", {
+		"duration": duration,
+		"value": boost_percentage
+	}, caster)
+
+func create_defense_boost(duration: float = 10.0, boost_percentage: float = 0.3, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("defense_boost", {
+		"duration": duration,
+		"value": boost_percentage
+	}, caster)
+
+func create_speed_boost(duration: float = 8.0, boost_percentage: float = 0.5, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("speed_boost", {
+		"duration": duration,
+		"value": boost_percentage
+	}, caster)
+
+func create_slow(duration: float = 4.0, slow_percentage: float = 0.5, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("slow", {
+		"duration": duration,
+		"value": -slow_percentage
+	}, caster)
+
+func create_stun(duration: float = 2.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("stun", {
+		"duration": duration
+	}, caster)
+
+func create_silence(duration: float = 3.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("silence", {
+		"duration": duration
+	}, caster)
+
+func create_root(duration: float = 3.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("root", {
+		"duration": duration
+	}, caster)
+
+func create_weakness(duration: float = 6.0, reduction_percentage: float = 0.3, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("weakness", {
+		"duration": duration,
+		"value": -reduction_percentage
+	}, caster)
+
+func create_fury(duration: float = 12.0, attack_boost: float = 1.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("fury", {
+		"duration": duration,
+		"value": attack_boost
+	}, caster)
+
+func create_shield(duration: float = 8.0, shield_amount: float = 50.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("shield", {
+		"duration": duration,
+		"value": shield_amount
+	}, caster)
+
+func create_invulnerable(duration: float = 3.0, caster: Node = null) -> StatusEffectScript:
+	return create_custom_effect("invulnerable", {
+		"duration": duration
+	}, caster)

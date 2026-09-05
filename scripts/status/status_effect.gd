@@ -1,149 +1,212 @@
 extends RefCounted
 class_name StatusEffect
-## 状态效果数据类 - 定义Buff/Debuff
+## 状态效果基类 - Buff/Debuff 数据和逻辑
 
 enum EffectType {
-	BUFF,      # 增益
-	DEBUFF     # 减益
+	BUFF,           # 增益
+	DEBUFF,         # 减益
+	CONTROL         # 控制效果
 }
 
-enum StackBehavior {
-	NONE,           # 不堆叠，新的覆盖旧的
-	REFRESH_TIME,   # 刷新持续时间
-	ADD_STACK,      # 增加层数
-	REPLACE         # 替换旧的
+enum EffectCategory {
+	DAMAGE_OVER_TIME,      # 持续伤害 (DOT)
+	HEAL_OVER_TIME,        # 持续治疗 (HOT)
+	STAT_MODIFIER,         # 属性修改
+	MOVEMENT_MODIFIER,     # 移动修改
+	STUN,                  # 眩晕
+	SILENCE,               # 沉默
+	ROOT,                  # 定身
+	SLOW,                  # 减速
+	CUSTOM                 # 自定义
 }
 
-## 基础属性
+## 效果数据
 var effect_id: String = ""
-var name: String = ""
-var description: String = ""
-var icon: String = "res://assets/icons/status_effects/default.png"
-
-## 效果类型
+var effect_name: String = ""
 var effect_type: EffectType = EffectType.BUFF
+var effect_category: EffectCategory = EffectCategory.STAT_MODIFIER
 
 ## 持续时间
-var duration: float = 0.0  # 0 = 永久
+var duration: float = 5.0           # 总持续时间（秒）
+var remaining_time: float = 5.0     # 剩余时间
+var is_permanent: bool = false      # 是否永久
 
-## 堆叠规则
-var max_stacks: int = 1
-var stack_behavior: StackBehavior = StackBehavior.REFRESH_TIME
-var can_refresh: bool = true
+## 堆叠
+var max_stacks: int = 1             # 最大堆叠层数
+var current_stacks: int = 1         # 当前层数
+var stack_mode: String = "replace"  # replace/add/extend/refresh
 
-## DOT/HOT (Damage/Heal Over Time)
-var tick_interval: float = 0.0  # 0 = 不触发
-var tick_effect: Dictionary = {}  # {type: "damage"/"heal", base_value: float}
+## 效果数值
+var value: float = 0.0              # 基础数值
+var value_per_stack: float = 0.0    # 每层额外数值
+var tick_interval: float = 1.0      # DOT/HOT 触发间隔
+var tick_timer: float = 0.0         # 当前计时器
 
-## 属性修改器
-var stat_modifiers: Array = []  # [{stat: String, modifier_type: String, value: float}]
+## 目标和施法者
+var target: Node = null
+var caster: Node = null
 
 ## 视觉效果
+var icon_path: String = ""
 var particle_effect: String = ""
-var animation: String = ""
+var color: Color = Color.WHITE
 
-## 是否可被驱散
-var dispellable: bool = true
+## 回调（可选）
+var on_applied: Callable
+var on_removed: Callable
+var on_tick: Callable
+var on_stack_changed: Callable
 
-func _init() -> void:
-	pass
+func _init(data: Dictionary = {}) -> void:
+	_load_from_dict(data)
 
-## 从字典创建状态效果
-static func from_dict(data: Dictionary):
-	var StatusEffectScript = load("res://scripts/status/status_effect.gd")
-	var effect = StatusEffectScript.new()
+## 从字典加载数据
+func _load_from_dict(data: Dictionary) -> void:
+	if data.has("id"):
+		effect_id = data["id"]
+	if data.has("name"):
+		effect_name = data["name"]
+	if data.has("type"):
+		effect_type = data["type"]
+	if data.has("category"):
+		effect_category = data["category"]
+	if data.has("duration"):
+		duration = data["duration"]
+		remaining_time = duration
+	if data.has("is_permanent"):
+		is_permanent = data["is_permanent"]
+	if data.has("max_stacks"):
+		max_stacks = data["max_stacks"]
+	if data.has("stack_mode"):
+		stack_mode = data["stack_mode"]
+	if data.has("value"):
+		value = data["value"]
+	if data.has("value_per_stack"):
+		value_per_stack = data["value_per_stack"]
+	if data.has("tick_interval"):
+		tick_interval = data["tick_interval"]
+	if data.has("icon"):
+		icon_path = data["icon"]
+	if data.has("particle_effect"):
+		particle_effect = data["particle_effect"]
+	if data.has("color"):
+		var c = data["color"]
+		if c is Color:
+			color = c
+		elif c is String:
+			color = Color(c)
 
-	effect.effect_id = data.get("effect_id", "")
-	effect.name = data.get("name", "")
-	effect.description = data.get("description", "")
-	effect.icon = data.get("icon", "res://assets/icons/status_effects/default.png")
+## 更新效果（每帧调用）
+func update(delta: float) -> bool:
+	if is_permanent:
+		return true
 
-	# 效果类型
-	var type_str = data.get("effect_type", "buff")
-	effect.effect_type = EffectType.BUFF if type_str == "buff" else EffectType.DEBUFF
+	remaining_time -= delta
 
-	# 持续时间
-	effect.duration = float(data.get("duration", 0.0))
+	# 处理 DOT/HOT
+	if effect_category in [EffectCategory.DAMAGE_OVER_TIME, EffectCategory.HEAL_OVER_TIME]:
+		tick_timer += delta
+		if tick_timer >= tick_interval:
+			tick_timer = 0.0
+			_do_tick()
 
-	# 堆叠规则
-	effect.max_stacks = int(data.get("max_stacks", 1))
-	effect.can_refresh = bool(data.get("can_refresh", true))
+	# 效果到期
+	if remaining_time <= 0:
+		return false
 
-	var stack_str = data.get("stack_behavior", "refresh_time")
-	match stack_str:
-		"none":
-			effect.stack_behavior = StackBehavior.NONE
-		"refresh_time":
-			effect.stack_behavior = StackBehavior.REFRESH_TIME
-		"add_stack":
-			effect.stack_behavior = StackBehavior.ADD_STACK
-		"replace":
-			effect.stack_behavior = StackBehavior.REPLACE
+	return true
 
-	# DOT/HOT
-	effect.tick_interval = float(data.get("tick_interval", 0.0))
-	effect.tick_effect = data.get("tick_effect", {})
+## 执行周期性效果
+func _do_tick() -> void:
+	if not is_instance_valid(target):
+		return
 
-	# 属性修改器
-	effect.stat_modifiers = data.get("stat_modifiers", [])
+	var total_value = get_total_value()
 
-	# 视觉效果
-	effect.particle_effect = data.get("particle_effect", "")
-	effect.animation = data.get("animation", "")
+	match effect_category:
+		EffectCategory.DAMAGE_OVER_TIME:
+			if target.has_method("take_damage"):
+				target.take_damage(total_value)
 
-	# 驱散
-	effect.dispellable = bool(data.get("dispellable", true))
+		EffectCategory.HEAL_OVER_TIME:
+			if target.has_method("heal"):
+				target.heal(total_value)
+			elif target.has_method("add_health"):
+				target.add_health(total_value)
 
-	return effect
+	if on_tick.is_valid():
+		on_tick.call(self, target, total_value)
 
-## 获取每层的效果值（用于堆叠计算）
-func get_tick_value_per_stack() -> float:
-	if tick_effect.is_empty():
-		return 0.0
-	return float(tick_effect.get("base_value", 0.0))
+## 获取总数值（考虑堆叠）
+func get_total_value() -> float:
+	return value + (value_per_stack * max(0, current_stacks - 1))
 
-## 是否是DOT/HOT
-func has_tick_effect() -> bool:
-	return tick_interval > 0.0 and not tick_effect.is_empty()
+## 添加堆叠
+func add_stack(amount: int = 1) -> bool:
+	if current_stacks >= max_stacks:
+		return false
 
-## 是否修改属性
-func has_stat_modifiers() -> bool:
-	return not stat_modifiers.is_empty()
+	current_stacks = mini(current_stacks + amount, max_stacks)
 
-## 获取显示文本
-func get_tooltip() -> String:
-	var text = "[b]%s[/b]\n%s" % [name, description]
+	if on_stack_changed.is_valid():
+		on_stack_changed.call(self, current_stacks)
 
-	if duration > 0:
-		text += "\n持续时间: %.1f秒" % duration
-	else:
-		text += "\n持续时间: 永久"
+	return true
 
-	if max_stacks > 1:
-		text += "\n最大层数: %d" % max_stacks
+## 刷新持续时间
+func refresh_duration() -> void:
+	remaining_time = duration
 
-	if has_tick_effect():
-		var tick_type = tick_effect.get("type", "")
-		var tick_value = tick_effect.get("base_value", 0.0)
-		if tick_type == "damage":
-			text += "\n每%.1f秒造成%.0f伤害" % [tick_interval, tick_value]
-		elif tick_type == "heal":
-			text += "\n每%.1f秒恢复%.0f生命" % [tick_interval, tick_value]
+## 延长持续时间
+func extend_duration(extra_time: float) -> void:
+	remaining_time += extra_time
 
-	if has_stat_modifiers():
-		text += "\n"
-		for mod in stat_modifiers:
-			var stat = mod.get("stat", "")
-			var mod_type = mod.get("modifier_type", "")
-			var value = mod.get("value", 0.0)
+## 应用效果（首次应用时调用）
+func apply(target_node: Node, caster_node: Node = null) -> void:
+	target = target_node
+	caster = caster_node
 
-			if mod_type == "add":
-				text += "\n%s +%.0f" % [stat, value]
-			elif mod_type == "multiply":
-				var percent = (value - 1.0) * 100.0
-				if percent > 0:
-					text += "\n%s +%.0f%%" % [stat, percent]
-				else:
-					text += "\n%s %.0f%%" % [stat, percent]
+	if on_applied.is_valid():
+		on_applied.call(self, target)
 
-	return text
+## 移除效果
+func remove() -> void:
+	if on_removed.is_valid():
+		on_removed.call(self, target)
+
+## 是否是同类效果
+func is_same_effect(other: StatusEffect) -> bool:
+	return effect_id == other.effect_id
+
+## 获取剩余时间百分比
+func get_remaining_percentage() -> float:
+	if is_permanent:
+		return 1.0
+	return remaining_time / duration if duration > 0 else 0.0
+
+## 转为字典（用于保存/网络传输）
+func to_dict() -> Dictionary:
+	return {
+		"id": effect_id,
+		"name": effect_name,
+		"type": effect_type,
+		"category": effect_category,
+		"duration": duration,
+		"remaining_time": remaining_time,
+		"is_permanent": is_permanent,
+		"current_stacks": current_stacks,
+		"max_stacks": max_stacks,
+		"value": value,
+		"icon": icon_path
+	}
+
+## 复制效果
+func duplicate_effect() -> StatusEffect:
+	# 获取当前脚本并创建新实例
+	var StatusEffectScript = get_script()
+	var new_effect = StatusEffectScript.new(to_dict())
+	new_effect.on_applied = on_applied
+	new_effect.on_removed = on_removed
+	new_effect.on_tick = on_tick
+	new_effect.on_stack_changed = on_stack_changed
+	return new_effect
