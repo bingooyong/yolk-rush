@@ -2,7 +2,30 @@
 
 本目录为 agent / factory **Skill** 索引。约定见 [../architecture/SKILL_CONVENTION.md](../architecture/SKILL_CONVENTION.md)。
 
-当前仅登记 **Phase 3 planned** 条目；**无已实现 recipe**。状态一律 `planned`。
+当前登记 Phase 1–2 draft recipes + Phase 3 planned 条目。
+
+---
+
+## Draft (Phase 1–2)
+
+| id | status | 一句话 | 成功标准（摘要） |
+|----|--------|--------|------------------|
+| `create-character` | draft | 写角色 JSON + studio 可审 | validator 绿；feet/−Z；collision_profile |
+| `create-level` | draft | 写关卡 JSON + builder 可玩 | validator 绿；DSL roles；match 可跑完 |
+
+### create-character
+- **status**: draft
+- **inputs**: character brief → `data/characters/<id>.json`
+- **outputs**: contract-valid JSON + studio-checkable hero
+- **recipe**: `.agents/skills/create-character/SKILL.md`
+- **depends_on**: validate-asset-contract
+
+### create-level
+- **status**: draft
+- **inputs**: level brief → `data/levels/<id>.json` (DSL roles only)
+- **outputs**: validator-green JSON + `LevelBuilder` world in match
+- **recipe**: `.agents/skills/create-level/SKILL.md`
+- **depends_on**: create-character (playable capsule)
 
 ---
 
@@ -39,11 +62,3 @@
 1. 在本表增加一行，`status: planned`。
 2. 在 [SKILL_CONVENTION.md](../architecture/SKILL_CONVENTION.md) 字段齐全后再写 recipe。
 3. 实现后改 `status`，并链到实际路径；**禁止**无索引直接改 Runtime。
-
-
-### create-character
-- **status**: draft
-- **inputs**: character brief → `data/characters/<id>.json`
-- **outputs**: contract-valid JSON + studio-checkable hero
-- **recipe**: `.agents/skills/create-character/SKILL.md`
-- **depends_on**: validate-asset-contract
