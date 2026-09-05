@@ -39,3 +39,11 @@
 1. 在本表增加一行，`status: planned`。
 2. 在 [SKILL_CONVENTION.md](../architecture/SKILL_CONVENTION.md) 字段齐全后再写 recipe。
 3. 实现后改 `status`，并链到实际路径；**禁止**无索引直接改 Runtime。
+
+
+### create-character
+- **status**: draft
+- **inputs**: character brief → `data/characters/<id>.json`
+- **outputs**: contract-valid JSON + studio-checkable hero
+- **recipe**: `.agents/skills/create-character/SKILL.md`
+- **depends_on**: validate-asset-contract

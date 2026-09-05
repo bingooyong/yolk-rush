@@ -1,10 +1,13 @@
 {
   "id": "09-04-hero-pipeline",
-  "title": "Phase 1 — Yolk Hero + Character Asset Pipeline",
-  "status": "planning",
+  "title": "Phase 1 \u2014 Yolk Hero + Character Asset Pipeline",
+  "status": "in_progress",
   "priority": "P0",
   "parent": "09-04-factory-phase-1-3",
   "children": [],
   "package": "yolk-rush",
-  "branch": "main"
+  "branch": "main",
+  "meta": {
+    "note": "Loaders+capsule merged; studio/placeholder in flight"
+  }
 }
