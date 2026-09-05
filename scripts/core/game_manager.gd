@@ -21,6 +21,7 @@ const SaveManagerClass = preload("res://scripts/core/save_manager.gd")
 const SkillSystemClass = preload("res://scripts/skill/skill_system.gd")
 const StatusEffectSystemClass = preload("res://scripts/status/status_effect_system.gd")
 const StatusEffectDatabaseClass = preload("res://scripts/status/status_effect_database.gd")
+const AIManagerClass = preload("res://scripts/ai/ai_manager.gd")
 
 signal game_initialized()
 signal systems_ready()
@@ -38,6 +39,7 @@ var drop_system
 var save_manager
 var skill_system
 var status_effect_system
+var ai_manager
 
 # 数据库引用
 var equipment_database
@@ -148,6 +150,10 @@ func _initialize_systems() -> void:
 	status_effect_system = StatusEffectSystemClass.new()
 	add_child(status_effect_system)
 	status_effect_system.set_database(status_effect_database)
+
+	# AI管理器
+	ai_manager = AIManagerClass.new()
+	add_child(ai_manager)
 
 	print("[GameManager] Systems initialized")
 	systems_ready.emit()
@@ -299,3 +305,7 @@ func get_status_effect_system():
 ## 获取技能系统
 func get_skill_system():
 	return skill_system
+
+## 获取AI管理器
+func get_ai_manager():
+	return ai_manager
